@@ -8,9 +8,8 @@ import '../../../../core/utils/logger.dart';
 import '../../../../shared/widgets/loading_view.dart';
 import '../../../../shared/widgets/confirm_dialog.dart';
 import '../../domain/entities/reminder.dart';
-import '../../domain/usecases/get_reminder.dart';
-import '../../domain/usecases/update_reminder.dart';
-import '../../domain/usecases/delete_reminder.dart';
+import '../../domain/usecases/watch_reminders.dart';
+import '../../domain/usecases/schedule_reminder.dart';
 import '../cubits/reminder_list_cubit.dart';
 
 /// Screen for viewing and editing reminder details

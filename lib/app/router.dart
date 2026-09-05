@@ -11,6 +11,7 @@ import '../features/projects/presentation/screens/project_detail_screen.dart';
 import '../features/habits/presentation/screens/habit_list_screen.dart';
 import '../features/habits/presentation/screens/habit_detail_screen.dart';
 import '../features/reminders/presentation/screens/reminder_list_screen.dart';
+import '../features/reminders/presentation/screens/reminder_detail_screen.dart';
 
 /// Application router configuration
 final router = GoRouter(
