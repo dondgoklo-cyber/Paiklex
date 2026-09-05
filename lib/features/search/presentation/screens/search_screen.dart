@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import '../../../../app/di.dart';
+import '../../../../core/utils/debouncer.dart';
 import '../../../../shared/widgets/loading_view.dart';
 import '../../../../shared/widgets/error_view.dart';
 import '../../../../shared/widgets/empty_state.dart';
+import '../../../../shared/widgets/animated_task_tile.dart';
 import '../../../tasks/presentation/cubits/task_list_cubit.dart';
 import '../../../tasks/domain/entities/task.dart';
 
@@ -18,6 +21,8 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
+  final RefreshController _refreshController = RefreshController();
+  String _currentQuery = '';
 
   @override
   void initState() {
@@ -29,11 +34,24 @@ class _SearchScreenState extends State<SearchScreen> {
   void dispose() {
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
+    _refreshController.dispose();
     super.dispose();
   }
 
   void _onSearchChanged() {
-    setState(() {});
+    // Debounce search input
+    searchDebouncer.debounce(() {
+      if (mounted) {
+        setState(() {
+          _currentQuery = _searchController.text;
+        });
+      }
+    });
+  }
+
+  Future<void> _onRefresh() async {
+    await context.read<TaskListCubit>().watch();
+    _refreshController.refreshCompleted();
   }
 
   List<Task> _filterTasks(List<Task> tasks, String query) {
@@ -76,45 +94,51 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
             ),
             Expanded(
-              child: BlocBuilder<TaskListCubit, TaskListState>(
-                builder: (context, state) {
-                  if (state.status == TaskListStatus.loading) {
-                    return const LoadingView();
-                  }
-                  if (state.status == TaskListStatus.error) {
-                    return ErrorView(
-                      message: state.errorMessage ?? 'Error loading tasks',
-                      onRetry: () => context.read<TaskListCubit>().watch(),
+              child: SmartRefresher(
+                controller: _refreshController,
+                onRefresh: _onRefresh,
+                child: BlocBuilder<TaskListCubit, TaskListState>(
+                  builder: (context, state) {
+                    if (state.status == TaskListStatus.loading) {
+                      return const LoadingView.skeletonList();
+                    }
+                    if (state.status == TaskListStatus.error) {
+                      return ErrorView(
+                        message: state.errorMessage ?? 'Error loading tasks',
+                        onRetry: () => context.read<TaskListCubit>().watch(),
+                      );
+                    }
+
+                    final filtered = _filterTasks(state.tasks, _currentQuery);
+
+                    if (_currentQuery.isEmpty) {
+                      return EmptyState(
+                        icon: Icons.search,
+                        title: AppLocalizations.of(context)!.searchEmptyTitle,
+                        subtitle: AppLocalizations.of(context)!.searchEmptySubtitle,
+                      );
+                    }
+
+                    if (filtered.isEmpty) {
+                      return EmptyState(
+                        icon: Icons.search_off,
+                        title: AppLocalizations.of(context)!.noResults,
+                        subtitle: AppLocalizations.of(context)!.noResultsDesc,
+                      );
+                    }
+
+                    return ListView.builder(
+                      itemCount: filtered.length,
+                      itemBuilder: (context, i) {
+                        final task = filtered[i];
+                        return AnimatedListItem(
+                          index: i,
+                          child: _SearchTaskTile(task: task),
+                        );
+                      },
                     );
-                  }
-
-                  final query = _searchController.text;
-                  final filtered = _filterTasks(state.tasks, query);
-
-                  if (query.isEmpty) {
-                    return EmptyState(
-                      icon: Icons.search,
-                      title: AppLocalizations.of(context)!.searchEmptyTitle,
-                      subtitle: AppLocalizations.of(context)!.searchEmptySubtitle,
-                    );
-                  }
-
-                  if (filtered.isEmpty) {
-                    return EmptyState(
-                      icon: Icons.search_off,
-                      title: AppLocalizations.of(context)!.noResults,
-                      subtitle: AppLocalizations.of(context)!.noResultsDesc,
-                    );
-                  }
-
-                  return ListView.builder(
-                    itemCount: filtered.length,
-                    itemBuilder: (context, i) {
-                      final task = filtered[i];
-                      return _SearchTaskTile(task: task);
-                    },
-                  );
-                },
+                  },
+                ),
               ),
             ),
           ],

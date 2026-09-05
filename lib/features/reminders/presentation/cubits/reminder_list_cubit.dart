@@ -1,5 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:fpdart/fpdart.dart';
+import '../../../../core/errors/failures.dart';
+import '../../../../core/utils/undo_manager.dart';
+import '../../../../core/utils/logger.dart';
 import '../../domain/entities/reminder.dart';
 import '../../domain/usecases/watch_reminders.dart';
 import '../../domain/usecases/create_reminder.dart';
@@ -7,8 +11,6 @@ import '../../domain/usecases/update_reminder.dart';
 import '../../domain/usecases/delete_reminder.dart';
 import '../../domain/usecases/schedule_reminder.dart';
 import '../../domain/usecases/cancel_reminder.dart';
-import '../../../../core/errors/failures.dart';
-import '../../../../core/utils/logger.dart';
 
 part 'reminder_list_state.dart';
 
@@ -125,17 +127,36 @@ class ReminderListCubit extends Cubit<ReminderListState> {
     );
   }
 
-  /// Deletes a reminder
-  Future<void> delete(String reminderId) async {
+  /// Deletes a reminder with undo support
+  Future<String?> delete(String reminderId) async {
+    // Get the reminder before deletion for undo
+    final reminder = state.reminders.firstWhere((r) => r.id == reminderId);
+    
     final result = await _deleteReminder(reminderId);
-    result.fold(
+    
+    return result.fold(
       (failure) {
         _logger.e('Failed to delete reminder', error: failure);
         emit(state.copyWith(errorMessage: failure.message));
+        return null;
       },
       (_) {
         _logger.d('Reminder deleted: $reminderId');
-        // Stream will emit new state automatically
+        // Add undo action
+        final actionId = undoManager.addAction(
+          type: UndoActionType.deleteReminder,
+          entity: reminder,
+          onUndo: () async {
+            await _createReminder(
+              taskId: reminder.taskId,
+              habitId: reminder.habitId,
+              triggerAt: reminder.triggerAt,
+              title: reminder.title,
+              body: reminder.body,
+            );
+          },
+        );
+        return actionId;
       },
     );
   }
@@ -152,6 +173,17 @@ class ReminderListCubit extends Cubit<ReminderListState> {
         _logger.d('Reminder cancelled: $reminderId');
         // Stream will emit new state automatically
       },
+    );
+  }
+
+  /// Restores a deleted reminder
+  Future<void> restoreReminder(Reminder reminder) async {
+    await _createReminder(
+      taskId: reminder.taskId,
+      habitId: reminder.habitId,
+      triggerAt: reminder.triggerAt,
+      title: reminder.title,
+      body: reminder.body,
     );
   }
 

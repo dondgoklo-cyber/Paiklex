@@ -122,5 +122,16 @@
   "reminderTitle": "Reminder Title",
   "reminderTime": "Reminder Time",
   "cancelReminder": "Cancel Reminder",
-  "triggered": "Triggered"
-}
+  "triggered": "Triggered",
+  "undo": "Undo",
+  "undoDelete": "Task deleted",
+  "undoDeleteItem": "{{item}} deleted",
+  "undoArchive": "Project archived",
+  "undoArchiveItem": "{{item}} archived",
+  "undoUnarchive": "Project unarchived",
+  "undoUnarchiveItem": "{{item}} unarchived",
+  "undoComplete": "Habit completed",
+  "undoCompleteItem": "{{item}} completed",
+  "pullToRefresh": "Pull to refresh",
+  "refreshing": "Refreshing...",
+  "releaseToRefresh": "Release to refresh"

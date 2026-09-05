@@ -122,5 +122,17 @@
   "reminderTitle": "Название напоминания",
   "reminderTime": "Время напоминания",
   "cancelReminder": "Отменить напоминание",
-  "triggered": "Сработало"
+  "triggered": "Сработало",
+  "undo": "Отменить",
+  "undoDelete": "Задача удалена",
+  "undoDeleteItem": "{{item}} удалён",
+  "undoArchive": "Проект архивирован",
+  "undoArchiveItem": "{{item}} архивирован",
+  "undoUnarchive": "Проект разархивирован",
+  "undoUnarchiveItem": "{{item}} разархивирован",
+  "undoComplete": "Привычка выполнена",
+  "undoCompleteItem": "{{item}} выполнена",
+  "pullToRefresh": "Потяните для обновления",
+  "refreshing": "Обновление...",
+  "releaseToRefresh": "Отпустите для обновления"
 }

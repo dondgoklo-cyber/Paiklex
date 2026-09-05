@@ -1,13 +1,15 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:fpdart/fpdart.dart';
+import '../../../../core/errors/failures.dart';
+import '../../../../core/utils/undo_manager.dart';
+import '../../../../core/utils/logger.dart';
 import '../../domain/entities/habit.dart';
 import '../../domain/usecases/watch_habits.dart';
 import '../../domain/usecases/create_habit.dart';
 import '../../domain/usecases/update_habit.dart';
 import '../../domain/usecases/delete_habit.dart';
 import '../../domain/usecases/complete_habit.dart';
-import '../../../../core/errors/failures.dart';
-import '../../../../core/utils/logger.dart';
 
 part 'habit_list_state.dart';
 
@@ -95,33 +97,79 @@ class HabitListCubit extends Cubit<HabitListState> {
     );
   }
 
-  /// Deletes a habit
-  Future<void> delete(String habitId) async {
+  /// Deletes a habit with undo support
+  Future<String?> delete(String habitId) async {
+    // Get the habit before deletion for undo
+    final habit = state.habits.firstWhere((h) => h.id == habitId);
+    
     final result = await _deleteHabit(habitId);
-    result.fold(
+    
+    return result.fold(
       (failure) {
         _logger.e('Failed to delete habit', error: failure);
         emit(state.copyWith(errorMessage: failure.message));
+        return null;
       },
       (_) {
         _logger.d('Habit deleted: $habitId');
-        // Stream will emit new state automatically
+        // Add undo action
+        final actionId = undoManager.addAction(
+          type: UndoActionType.deleteHabit,
+          entity: habit,
+          onUndo: () async {
+            await _createHabit(
+              habit.title,
+              projectId: habit.projectId,
+              frequency: habit.frequency,
+            );
+          },
+        );
+        return actionId;
       },
     );
   }
 
-  /// Completes a habit
-  Future<void> complete(String habitId) async {
+  /// Completes a habit with undo support
+  Future<String?> complete(String habitId) async {
+    // Get the habit before completion for undo
+    final habit = state.habits.firstWhere((h) => h.id == habitId);
+    final currentStreak = habit.streak;
+    
     final result = await _completeHabit(habitId);
-    result.fold(
+    
+    return result.fold(
       (failure) {
         _logger.e('Failed to complete habit', error: failure);
         emit(state.copyWith(errorMessage: failure.message));
+        return null;
       },
       (completedHabit) {
         _logger.d('Habit completed: ${completedHabit.id}');
-        // Stream will emit new state automatically
+        // Add undo action
+        final actionId = undoManager.addAction(
+          type: UndoActionType.completeHabit,
+          entity: completedHabit,
+          onUndo: () async {
+            // Reset streak back to previous value
+            await _updateHabit(
+              completedHabit.copyWith(
+                streak: currentStreak,
+                lastCompletedAt: null,
+              ),
+            );
+          },
+        );
+        return actionId;
       },
+    );
+  }
+
+  /// Restores a deleted habit
+  Future<void> restoreHabit(Habit habit) async {
+    await _createHabit(
+      habit.title,
+      projectId: habit.projectId,
+      frequency: habit.frequency,
     );
   }
 

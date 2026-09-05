@@ -1,5 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:uuid/uuid.dart';
+import '../core/utils/undo_manager.dart';
 import '../database/app_database.dart';
 import '../features/tasks/data/repositories/task_repository_impl.dart';
 import '../features/tasks/domain/repositories/task_repository.dart';
@@ -187,12 +188,18 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton<LocaleService>(() => LocaleService());
 
   // ==========================================================================
+  // Undo Manager
+  // ==========================================================================
+  getIt.registerLazySingleton<UndoManager>(() => undoManager);
+
+  // ==========================================================================
   // Cubits (factory - new instance for each screen)
   // ==========================================================================
   getIt.registerFactory<TaskListCubit>(() => TaskListCubit(
         getIt<WatchAllTasks>(),
         getIt<ToggleTask>(),
         getIt<DeleteTask>(),
+        getIt<CreateTask>(),
       ));
 
   getIt.registerFactory<ProjectListCubit>(() => ProjectListCubit(
