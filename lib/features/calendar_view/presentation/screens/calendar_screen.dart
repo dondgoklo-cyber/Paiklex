@@ -31,7 +31,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       create: (_) => getIt<TaskListCubit>()..watch(),
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Calendar'),
+          title: Text(AppLocalizations.of(context)!.calendar),
         ),
         body: BlocBuilder<TaskListCubit, TaskListState>(
           builder: (context, state) {

@@ -30,10 +30,10 @@ class SettingsScreen extends StatelessWidget {
             title: AppLocalizations.of(context)!.appearance,
             children: [
               _ThemeTile(
-                current: themeService.mode,
-                onChanged: (m) {
+                current: themeService.themeMode,
+                onChanged: (m) async {
                   logger.d('Theme changed to: $m');
-                  themeService.setThemeMode(m);
+                  await themeService.setMode(m);
                 },
               ),
             ],
@@ -44,10 +44,10 @@ class SettingsScreen extends StatelessWidget {
             title: AppLocalizations.of(context)!.language,
             children: [
               _LocaleTile(
-                currentLocale: localeService.current,
-                onChanged: (l) {
+                currentLocale: localeService.locale,
+                onChanged: (l) async {
                   logger.d('Locale changed to: $l');
-                  localeService.setLocale(l);
+                  await localeService.setLocale(l);
                 },
               ),
             ],
@@ -63,12 +63,14 @@ class SettingsScreen extends StatelessWidget {
                 subtitle: Text(AppLocalizations.of(context)!.exportDesc),
                 onTap: () async {
                   try {
-                    await syncService.exportTasks();
+                    final success = await syncService.exportAndShare();
                     if (!context.mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
-                          AppLocalizations.of(context)!.exportSuccess,
+                          success
+                              ? AppLocalizations.of(context)!.exportSuccess
+                              : AppLocalizations.of(context)!.exportFailed,
                         ),
                       ),
                     );
@@ -92,12 +94,14 @@ class SettingsScreen extends StatelessWidget {
                 subtitle: Text(AppLocalizations.of(context)!.importDesc),
                 onTap: () async {
                   try {
-                    await syncService.importTasks();
+                    final success = await syncService.importFromFile();
                     if (!context.mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
-                          AppLocalizations.of(context)!.importSuccess,
+                          success
+                              ? AppLocalizations.of(context)!.importSuccess
+                              : AppLocalizations.of(context)!.importFailed,
                         ),
                       ),
                     );
