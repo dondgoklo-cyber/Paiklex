@@ -46,7 +46,7 @@ class TaskTile extends StatelessWidget {
     );
   }
 
-  Widget _buildSubtitle(BuildContext context, Task task) {
+  Widget? _buildSubtitle(BuildContext context, Task task) {
     final parts = <String>[];
 
     // Due date
