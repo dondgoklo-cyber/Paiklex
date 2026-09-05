@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import '../../../../app/di.dart';
+import '../../../../core/utils/date_utils.dart';
 import '../../../../core/utils/debouncer.dart';
 import '../../../../shared/widgets/loading_view.dart';
 import '../../../../shared/widgets/error_view.dart';
@@ -174,7 +175,7 @@ class _SearchTaskTile extends StatelessWidget {
         children: [
           if (task.dueDate != null) ...[
             Text(
-              task.dueDate!.toLocal().toString().split(' ')[0],
+              AppDateUtils.dateOnlyUtc(task.dueDate!).toLocal().toString().split(' ')[0],
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ],

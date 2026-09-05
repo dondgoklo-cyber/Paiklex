@@ -36,6 +36,7 @@ class SyncService {
 
       if (kIsWeb) return null;
 
+      if (kIsWeb) return null;
       final dir = await getApplicationDocumentsDirectory();
       final ts = AppDateUtils.nowUtc()
           .toIso8601String()
@@ -88,20 +89,20 @@ class SyncService {
   /// Imports data from a JSON string
   Future<bool> importFromJson(String json) async {
     try {
-      final data = jsonDecode(json) as Map<String, dynamic>;
+      final data = jsonDecode(json) as Map<String, Object?>;
 
       await _db.transaction(() async {
         for (final t in (data['tasks'] as List? ?? [])) {
-          await _importTask(t as Map<String, dynamic>);
+          await _importTask(t as Map<String, Object?>);
         }
         for (final p in (data['projects'] as List? ?? [])) {
-          await _importProject(p as Map<String, dynamic>);
+          await _importProject(p as Map<String, Object?>);
         }
         for (final h in (data['habits'] as List? ?? [])) {
-          await _importHabit(h as Map<String, dynamic>);
+          await _importHabit(h as Map<String, Object?>);
         }
         for (final r in (data['reminders'] as List? ?? [])) {
-          await _importReminder(r as Map<String, dynamic>);
+          await _importReminder(r as Map<String, Object?>);
         }
       });
 
@@ -112,7 +113,7 @@ class SyncService {
     }
   }
 
-  Future<void> _importTask(Map<String, dynamic> j) async {
+  Future<void> _importTask(Map<String, Object?> j) async {
     final id = j['id'] as String;
     final existing = await _db.taskDao.getById(id);
     final incomingUpdated = j['updatedAt'] as int;
@@ -138,7 +139,7 @@ class SyncService {
     }
   }
 
-  Future<void> _importProject(Map<String, dynamic> j) async {
+  Future<void> _importProject(Map<String, Object?> j) async {
     final id = j['id'] as String;
     final existing = await _db.projectDao.getById(id);
     final incomingUpdated = j['updatedAt'] as int;
@@ -155,7 +156,7 @@ class SyncService {
     }
   }
 
-  Future<void> _importHabit(Map<String, dynamic> j) async {
+  Future<void> _importHabit(Map<String, Object?> j) async {
     final id = j['id'] as String;
     await _db.habitDao.insert(HabitsCompanion(
       id: Value(id),
@@ -170,7 +171,7 @@ class SyncService {
     ));
   }
 
-  Future<void> _importReminder(Map<String, dynamic> j) async {
+  Future<void> _importReminder(Map<String, Object?> j) async {
     await _db.reminderDao.insert(RemindersCompanion(
       id: Value(j['id'] as String),
       taskId: Value(j['taskId'] as String?),
@@ -183,7 +184,7 @@ class SyncService {
     ));
   }
 
-  Map<String, dynamic> _taskToJson(TaskRow r) => {
+  Map<String, Object?> _taskToJson(TaskRow r) => {
         'id': r.id,
         'projectId': r.projectId,
         'parentTaskId': r.parentTaskId,
@@ -201,7 +202,7 @@ class SyncService {
         'completedAt': r.completedAt,
       };
 
-  Map<String, dynamic> _projectToJson(ProjectRow r) => {
+  Map<String, Object?> _projectToJson(ProjectRow r) => {
         'id': r.id,
         'name': r.name,
         'color': r.color,
@@ -210,7 +211,7 @@ class SyncService {
         'updatedAt': r.updatedAt,
       };
 
-  Map<String, dynamic> _habitToJson(HabitRow r) => {
+  Map<String, Object?> _habitToJson(HabitRow r) => {
         'id': r.id,
         'projectId': r.projectId,
         'title': r.title,
@@ -222,7 +223,7 @@ class SyncService {
         'updatedAt': r.updatedAt,
       };
 
-  Map<String, dynamic> _reminderToJson(ReminderRow r) => {
+  Map<String, Object?> _reminderToJson(ReminderRow r) => {
         'id': r.id,
         'taskId': r.taskId,
         'habitId': r.habitId,

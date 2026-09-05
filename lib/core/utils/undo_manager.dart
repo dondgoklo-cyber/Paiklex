@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'date_utils.dart';
 import '../utils/logger.dart';
 
 /// Types of undoable actions
@@ -17,7 +18,7 @@ enum UndoActionType {
 class UndoAction {
   final String id;
   final UndoActionType type;
-  final dynamic entity;
+  final Object? entity;
   final DateTime timestamp;
   final Duration timeout;
 
@@ -29,7 +30,7 @@ class UndoAction {
     this.timeout = const Duration(seconds: 5),
   });
 
-  bool get isExpired => DateTime.now().difference(timestamp) > timeout;
+  bool get isExpired => AppDateUtils.nowUtc().difference(timestamp) > timeout;
 
   @override
   bool operator ==(Object other) =>
@@ -84,7 +85,7 @@ class UndoManager {
   /// Returns the action ID for reference
   String addAction({
     required UndoActionType type,
-    required dynamic entity,
+    required Object? entity,
     required UndoCallback onUndo,
     Duration timeout = const Duration(seconds: 5),
   }) {
@@ -92,7 +93,7 @@ class UndoManager {
       id: _generateId(),
       type: type,
       entity: entity,
-      timestamp: DateTime.now(),
+      timestamp: AppDateUtils.nowUtc(),
       timeout: timeout,
     );
 
@@ -180,7 +181,7 @@ class UndoManager {
 
   /// Generate unique ID for actions
   String _generateId() {
-    return 'undo_${DateTime.now().millisecondsSinceEpoch}_${_actions.length}';
+    return 'undo_${AppDateUtils.nowUtc().millisecondsSinceEpoch}_${_actions.length}';
   }
 
   /// Dispose the manager

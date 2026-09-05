@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
-import 'package:uuid/uuid.dart';
 import '../../../../app/di.dart';
+import '../../../../core/utils/date_utils.dart';
 import '../../../../core/utils/logger.dart';
 import '../../../../shared/widgets/loading_view.dart';
 import '../../../../shared/widgets/confirm_dialog.dart';
@@ -349,12 +349,12 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     if (_subtasksController.text.trim().isEmpty) return;
 
     final newSubtask = Task(
-      id: const Uuid().v4(),
+      id: '',
       parentTaskId: widget.taskId,
       content: _subtasksController.text.trim(),
       priority: TaskPriority.medium,
-      createdAt: DateTime.now().toUtc(),
-      updatedAt: DateTime.now().toUtc(),
+      createdAt: AppDateUtils.nowUtc(),
+      updatedAt: AppDateUtils.nowUtc(),
     );
 
     final result = await _createTask(newSubtask);
@@ -398,7 +398,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           .toList();
 
       final task = Task(
-        id: widget.taskId ?? const Uuid().v4(),
+        id: widget.taskId ?? '',
         content: _contentController.text.trim(),
         description: _descriptionController.text.trim().isEmpty
             ? null
@@ -407,9 +407,9 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
         dueDate: _dueDate,
         tags: tags,
         createdAt: widget.taskId == null
-            ? DateTime.now().toUtc()
-            : DateTime.now().toUtc(),
-        updatedAt: DateTime.now().toUtc(),
+            ? AppDateUtils.nowUtc()
+            : AppDateUtils.nowUtc(),
+        updatedAt: AppDateUtils.nowUtc(),
       );
 
       final result = widget.taskId == null

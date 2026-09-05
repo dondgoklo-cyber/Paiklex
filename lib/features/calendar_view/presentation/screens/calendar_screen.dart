@@ -22,7 +22,7 @@ class CalendarScreen extends StatefulWidget {
 }
 
 class _CalendarScreenState extends State<CalendarScreen> {
-  DateTime _focusedDay = DateTime.now();
+  DateTime _focusedDay = AppDateUtils.nowUtc();
   DateTime? _selectedDay;
 
   @override
@@ -137,7 +137,7 @@ class _SelectedDayTasks extends StatelessWidget {
           subtitle: Text(
             t.dueDate != null
                 ? '${t.dueDate!.toLocal().hour}:${t.dueDate!.toLocal().minute.toString().padLeft(2, '0')}'
-                : '',
+                : AppLocalizations.of(context)!.noDueDate,
           ),
           trailing: Container(
             width: 12,

@@ -3,6 +3,7 @@ import 'package:drift/drift.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz_data;
+import '../../../../core/utils/date_utils.dart';
 import '../../../../core/utils/logger.dart';
 import '../../../../core/errors/failures.dart';
 import '../../domain/entities/reminder.dart';
@@ -99,7 +100,7 @@ class ReminderRepositoryImpl implements ReminderRepository {
       // Schedule the notification
       tz_data.initializeTimeZones();
       
-      final now = DateTime.now();
+      final now = AppDateUtils.nowUtc();
       final triggerDate = reminder.triggerAt.toLocal();
       
       if (triggerDate.isAfter(now)) {

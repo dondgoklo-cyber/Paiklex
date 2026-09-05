@@ -113,6 +113,9 @@ LazyDatabase _openConnection() {
       return result.database;
     }
     final dbFolder = await getApplicationDocumentsDirectory();
+    if (kIsWeb) {
+      return NativeDatabase.createInBackground(null);
+    }
     final file = File(p.join(dbFolder.path, 'monolith.sqlite'));
     return NativeDatabase.createInBackground(file);
   });

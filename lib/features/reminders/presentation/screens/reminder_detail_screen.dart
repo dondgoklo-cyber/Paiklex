@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../app/di.dart';
+import '../../../../core/utils/date_utils.dart';
 import '../../../../core/utils/logger.dart';
 import '../../../../shared/widgets/loading_view.dart';
 import '../../../../shared/widgets/confirm_dialog.dart';
@@ -161,15 +162,15 @@ class _ReminderDetailScreenState extends State<ReminderDetailScreen> {
   Future<void> _selectTriggerDate() async {
     final selectedDate = await showDatePicker(
       context: context,
-      initialDate: _triggerAt ?? DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
+      initialDate: _triggerAt ?? AppDateUtils.nowUtc().toLocal(),
+      firstDate: AppDateUtils.nowUtc().toLocal(),
+      lastDate: AppDateUtils.nowUtc().toLocal().add(const Duration(days: 365)),
     );
 
     if (selectedDate != null) {
       final selectedTime = await showTimePicker(
         context: context,
-        initialTime: TimeOfDay.fromDateTime(_triggerAt ?? DateTime.now()),
+        initialTime: TimeOfDay.fromDateTime(_triggerAt ?? AppDateUtils.nowUtc().toLocal()),
       );
 
       if (selectedTime != null) {

@@ -1,4 +1,6 @@
 /// Результат парсинга естественного языка
+import 'date_utils.dart';
+
 class NlpParseResult {
   final String content;
   final DateTime? dueDate; // ВСЕГДА UTC!
@@ -26,7 +28,7 @@ class NlpParser {
 
   /// Парсит строку на естественном языке
   static NlpParseResult parse(String input, {String locale = 'ru'}) {
-    final now = DateTime.now(); // Локальное время пользователя
+    final now = AppDateUtils.nowUtc(); // Локальное время пользователя
     var text = input;
     final tags = <String>[];
     int? priority;
