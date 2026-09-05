@@ -11,6 +11,7 @@ import '../../domain/entities/priority.dart';
 import '../../domain/usecases/create_task.dart';
 import '../../domain/usecases/update_task.dart';
 import '../../domain/usecases/get_task.dart';
+import '../../domain/usecases/get_all_tasks.dart';
 import '../../domain/usecases/delete_task.dart';
 
 /// Screen for viewing and editing task details
@@ -37,6 +38,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   late final CreateTask _createTask;
   late final UpdateTask _updateTask;
   late final GetTask _getTask;
+  late final GetAllTasks _getAllTasks;
   late final DeleteTask _deleteTask;
 
   @override
@@ -45,6 +47,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     _createTask = getIt<CreateTask>();
     _updateTask = getIt<UpdateTask>();
     _getTask = getIt<GetTask>();
+    _getAllTasks = getIt<GetAllTasks>();
     _deleteTask = getIt<DeleteTask>();
 
     if (widget.taskId != null) {
@@ -74,6 +77,21 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               _dueDate = task.dueDate;
               _tagsController.text = task.tags.join(', ');
             }
+          }
+        },
+      );
+
+      // Load subtasks
+      final subtasksResult = await _getAllTasks.call();
+      subtasksResult.fold(
+        (failure) => _logger.e('Failed to load subtasks', error: failure),
+        (allTasks) {
+          if (mounted) {
+            setState(() {
+              _subtasks = allTasks
+                  .where((t) => t.parentTaskId == widget.taskId)
+                  .toList();
+            });
           }
         },
       );
@@ -265,36 +283,100 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     }
   }
 
-  void _toggleSubtask(int index) {
-    setState(() {
-      _subtasks[index] = _subtasks[index].copyWith(
-        isCompleted: !_subtasks[index].isCompleted,
-        updatedAt: DateTime.now().toUtc(),
+  Future<void> _toggleSubtask(Task subtask) async {
+    final updatedSubtask = subtask.copyWith(
+      isCompleted: !subtask.isCompleted,
+      updatedAt: DateTime.now().toUtc(),
+    );
+
+    final result = await _updateTask(updatedSubtask);
+    result.fold(
+      (failure) {
+        _logger.e('Failed to toggle subtask', error: failure);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(failure.message)),
+          );
+        }
+      },
+      (savedTask) {
+        if (mounted) {
+          setState(() {
+            final index = _subtasks.indexWhere((t) => t.id == subtask.id);
+            if (index != -1) {
+              _subtasks[index] = savedTask;
+            }
+          });
+        }
+      },
+    );
+  }
+
+  Future<void> _deleteSubtask(Task subtask) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await ConfirmDialog.show(
+      context: context,
+      title: l10n.delete,
+      message: '${l10n.delete} ${l10n.subtasks.toLowerCase()}?',
+      confirmText: l10n.yes,
+      cancelText: l10n.no,
+    );
+
+    if (confirmed == true) {
+      final result = await _deleteTask(subtask.id);
+      result.fold(
+        (failure) {
+          _logger.e('Failed to delete subtask', error: failure);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(failure.message)),
+            );
+          }
+        },
+        (_) {
+          _logger.d('Subtask deleted: ${subtask.id}');
+          if (mounted) {
+            setState(() {
+              _subtasks.removeWhere((t) => t.id == subtask.id);
+            });
+          }
+        },
       );
-    });
+    }
   }
 
-  void _deleteSubtask(int index) {
-    setState(() {
-      _subtasks.removeAt(index);
-    });
-  }
-
-  void _addSubtask() {
+  Future<void> _addSubtask() async {
     if (_subtasksController.text.trim().isEmpty) return;
-    
+
     final newSubtask = Task(
       id: const Uuid().v4(),
+      parentTaskId: widget.taskId,
       content: _subtasksController.text.trim(),
       priority: TaskPriority.medium,
       createdAt: DateTime.now().toUtc(),
       updatedAt: DateTime.now().toUtc(),
     );
-    
-    setState(() {
-      _subtasks.add(newSubtask);
-      _subtasksController.clear();
-    });
+
+    final result = await _createTask(newSubtask);
+    result.fold(
+      (failure) {
+        _logger.e('Failed to save subtask', error: failure);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(failure.message)),
+          );
+        }
+      },
+      (savedTask) {
+        _logger.d('Subtask saved: ${savedTask.id}');
+        if (mounted) {
+          setState(() {
+            _subtasks.add(savedTask);
+            _subtasksController.clear();
+          });
+        }
+      },
+    );
   }
 
   Future<void> _save() async {
@@ -391,8 +473,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
 /// Section for displaying and managing subtasks
 class _SubtasksSection extends StatelessWidget {
   final List<Task> subtasks;
-  final Function(int) onToggle;
-  final Function(int) onDelete;
+  final Function(Task) onToggle;
+  final Function(Task) onDelete;
   final VoidCallback onAdd;
 
   const _SubtasksSection({
@@ -432,14 +514,12 @@ class _SubtasksSection extends StatelessWidget {
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ),
-        ...subtasks.asMap().entries.map((entry) {
-          final index = entry.key;
-          final subtask = entry.value;
+        ...subtasks.map((subtask) {
           return _SubtaskTile(
             key: ValueKey(subtask.id),
             subtask: subtask,
-            onToggle: () => onToggle(index),
-            onDelete: () => onDelete(index),
+            onToggle: () => onToggle(subtask),
+            onDelete: () => onDelete(subtask),
           );
         }).toList(),
       ],
