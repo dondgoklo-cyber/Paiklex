@@ -27,21 +27,6 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Fix Android structure using flutter create
-        run: |
-          cd /tmp
-          flutter create -t app paiklex_temp
-          cd $GITHUB_WORKSPACE
-          rm -rf android
-          cp -r /tmp/paiklex_temp/android ./android
-          sed -i 's/com.example.paiklex_temp/com.example.monolith_tasks/g' android/app/build.gradle
-          mkdir -p android/app/src/main/kotlin/com/example/monolith_tasks
-          cp /tmp/paiklex_temp/android/app/src/main/kotlin/com/example/paiklex_temp/MainActivity.kt \
-             android/app/src/main/kotlin/com/example/monolith_tasks/
-          sed -i 's/package com.example.paiklex_temp/package com.example.monolith_tasks/g' \
-             android/app/src/main/kotlin/com/example/monolith_tasks/MainActivity.kt
-          rm -rf /tmp/paiklex_temp
-
       - name: Flutter version check
         run: flutter --version
 
@@ -60,7 +45,7 @@ jobs:
           dart run build_runner build --delete-conflicting-outputs
 
       - name: Analyze code
-        run: flutter analyze || true
+        run: flutter analyze
 
       - name: Build Debug APK
         run: flutter build apk --debug
