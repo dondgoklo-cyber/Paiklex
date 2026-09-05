@@ -23,6 +23,8 @@ import '../features/projects/domain/repositories/project_repository.dart';
 import '../features/projects/domain/usecases/watch_projects.dart';
 import '../features/projects/domain/usecases/create_project.dart';
 import '../features/projects/domain/usecases/update_project.dart';
+import '../features/projects/domain/usecases/delete_project.dart';
+import '../features/projects/domain/usecases/toggle_project_archive.dart';
 import '../features/projects/presentation/cubits/project_list_cubit.dart';
 
 // Habits
@@ -31,6 +33,9 @@ import '../features/habits/domain/repositories/habit_repository.dart';
 import '../features/habits/domain/usecases/watch_habits.dart';
 import '../features/habits/domain/usecases/create_habit.dart';
 import '../features/habits/domain/usecases/update_habit.dart';
+import '../features/habits/domain/usecases/delete_habit.dart';
+import '../features/habits/domain/usecases/complete_habit.dart';
+import '../features/habits/domain/usecases/get_habits_due_today.dart';
 import '../features/habits/presentation/cubits/habit_list_cubit.dart';
 
 // Reminders
@@ -38,7 +43,10 @@ import '../features/reminders/data/repositories/reminder_repository_impl.dart';
 import '../features/reminders/domain/repositories/reminder_repository.dart';
 import '../features/reminders/domain/usecases/watch_reminders.dart';
 import '../features/reminders/domain/usecases/create_reminder.dart';
+import '../features/reminders/domain/usecases/update_reminder.dart';
+import '../features/reminders/domain/usecases/delete_reminder.dart';
 import '../features/reminders/domain/usecases/schedule_reminder.dart';
+import '../features/reminders/domain/usecases/cancel_reminder.dart';
 import '../features/reminders/presentation/cubits/reminder_list_cubit.dart';
 
 /// GetIt instance for dependency injection
@@ -77,14 +85,14 @@ Future<void> setupDependencies() async {
   // Repositories - Projects
   // ==========================================================================
   getIt.registerLazySingleton<ProjectRepository>(
-    () => ProjectRepositoryImpl(getIt<AppDatabase>()),
+    () => ProjectRepositoryImpl(getIt<ProjectDao>()),
   );
 
   // ==========================================================================
   // Repositories - Habits
   // ==========================================================================
   getIt.registerLazySingleton<HabitRepository>(
-    () => HabitRepositoryImpl(getIt<AppDatabase>()),
+    () => HabitRepositoryImpl(getIt<HabitDao>()),
   );
 
   // ==========================================================================
@@ -92,7 +100,7 @@ Future<void> setupDependencies() async {
   // ==========================================================================
   getIt.registerLazySingleton<ReminderRepository>(
     () => ReminderRepositoryImpl(
-      getIt<AppDatabase>(),
+      getIt<ReminderDao>(),
       getIt<NotificationService>(),
     ),
   );
@@ -161,8 +169,14 @@ Future<void> setupDependencies() async {
       ));
   getIt.registerLazySingleton(() => UpdateReminder(getIt<ReminderRepository>()));
   getIt.registerLazySingleton(() => DeleteReminder(getIt<ReminderRepository>()));
-  getIt.registerLazySingleton(() => ScheduleReminder(getIt<ReminderRepository>()));
-  getIt.registerLazySingleton(() => CancelReminder(getIt<ReminderRepository>()));
+  getIt.registerLazySingleton(() => ScheduleReminder(
+        getIt<ReminderRepository>(),
+        getIt<NotificationService>(),
+      ));
+  getIt.registerLazySingleton(() => CancelReminder(
+        getIt<ReminderRepository>(),
+        getIt<NotificationService>(),
+      ));
 
   // ==========================================================================
   // Services
