@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../app/di.dart';
+import '../../../../core/utils/logger.dart';
 import '../../../../shared/widgets/loading_view.dart';
+import '../../../../shared/widgets/confirm_dialog.dart';
 import '../../domain/entities/task.dart';
 import '../../domain/entities/priority.dart';
 import '../../domain/usecases/create_task.dart';
@@ -27,7 +29,10 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   TaskPriority _priority = TaskPriority.medium;
   DateTime? _dueDate;
   final _tagsController = TextEditingController();
+  final _subtasksController = TextEditingController();
+  List<Task> _subtasks = [];
   bool _isLoading = false;
+  final _logger = AppLogger.forService('TaskDetailScreen');
 
   late final CreateTask _createTask;
   late final UpdateTask _updateTask;
@@ -53,17 +58,22 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
       final result = await _getTask(widget.taskId!);
       result.fold(
         (failure) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(failure.message)),
-          );
+          _logger.e('Failed to load task', error: failure);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(failure.message)),
+            );
+          }
         },
         (task) {
           if (task != null) {
-            _contentController.text = task.content;
-            _descriptionController.text = task.description ?? '';
-            _priority = task.priority;
-            _dueDate = task.dueDate;
-            _tagsController.text = task.tags.join(', ');
+            if (mounted) {
+              _contentController.text = task.content;
+              _descriptionController.text = task.description ?? '';
+              _priority = task.priority;
+              _dueDate = task.dueDate;
+              _tagsController.text = task.tags.join(', ');
+            }
           }
         },
       );
@@ -77,6 +87,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     _contentController.dispose();
     _descriptionController.dispose();
     _tagsController.dispose();
+    _subtasksController.dispose();
     super.dispose();
   }
 
@@ -86,11 +97,12 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.taskId == null ? l10n.addTask : 'Edit Task'),
+        title: Text(widget.taskId == null ? l10n.addTask : l10n.edit),
         actions: [
           if (widget.taskId != null)
             IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red),
+              icon: const Icon(Icons.delete),
+              tooltip: l10n.delete,
               onPressed: _confirmDelete,
             ),
         ],
@@ -102,24 +114,30 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  // Content
                   TextField(
                     controller: _contentController,
                     decoration: InputDecoration(
-                      labelText: l10n.tasks,
+                      labelText: l10n.taskContent,
                       border: const OutlineInputBorder(),
                     ),
                     maxLength: 2000,
+                    autofocus: widget.taskId == null,
                   ),
                   const SizedBox(height: 16),
+
+                  // Description
                   TextField(
                     controller: _descriptionController,
                     decoration: InputDecoration(
-                      labelText: 'Description',
+                      labelText: l10n.description,
                       border: const OutlineInputBorder(),
                     ),
                     maxLines: 3,
                   ),
                   const SizedBox(height: 16),
+
+                  // Priority
                   DropdownButtonFormField<TaskPriority>(
                     value: _priority,
                     items: TaskPriority.values.map((p) {
@@ -136,7 +154,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                               ),
                             ),
                             const SizedBox(width: 8),
-                            Text(p.name),
+                            Text(_getPriorityName(p, l10n)),
                           ],
                         ),
                       );
@@ -146,65 +164,146 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                         setState(() => _priority = value);
                       }
                     },
-                    decoration: const InputDecoration(
-                      labelText: 'Priority',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: l10n.priority,
+                      border: const OutlineInputBorder(),
                     ),
                   ),
                   const SizedBox(height: 16),
+
+                  // Due Date
                   Row(
                     children: [
                       Expanded(
                         child: TextField(
-                          controller: _tagsController,
-                          decoration: InputDecoration(
-                            labelText: 'Tags',
-                            hintText: 'comma separated',
-                            border: const OutlineInputBorder(),
+                          controller: TextEditingController(
+                            text: _dueDate != null
+                                ? '${_dueDate!.toLocal().year}-${_dueDate!.toLocal().month.toString().padLeft(2, '0')}-${_dueDate!.toLocal().day.toString().padLeft(2, '0')}'
+                                : '',
                           ),
+                          decoration: InputDecoration(
+                            labelText: l10n.dueDate,
+                            border: const OutlineInputBorder(),
+                            suffixIcon: const Icon(Icons.calendar_today),
+                          ),
+                          readOnly: true,
+                          onTap: _pickDate,
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      IconButton(
-                        icon: const Icon(Icons.calendar_today),
-                        onPressed: _pickDate,
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
-                  if (_dueDate != null)
-                    Text(
-                      'Due: ${_dueDate!.toLocal().toString().split(' ')[0]}',
-                      style: Theme.of(context).textTheme.bodySmall,
+                  const SizedBox(height: 16),
+
+                  // Tags
+                  TextField(
+                    controller: _tagsController,
+                    decoration: InputDecoration(
+                      labelText: l10n.tags,
+                      hintText: l10n.addTag,
+                      border: const OutlineInputBorder(),
                     ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    l10n.tagsHint,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Subtasks
+                  _SubtasksSection(
+                    subtasks: _subtasks,
+                    onToggle: _toggleSubtask,
+                    onDelete: _deleteSubtask,
+                    onAdd: _addSubtask,
+                  ),
                   const SizedBox(height: 24),
+
+                  // Save button
                   FilledButton(
                     onPressed: _save,
-                    child: Text(widget.taskId == null ? 'Create' : 'Save'),
+                    child: Text(widget.taskId == null ? l10n.save : l10n.save),
                   ),
                 ],
               ),
             ),
+      floatingActionButton: widget.taskId != null
+          ? FloatingActionButton(
+              onPressed: _save,
+              tooltip: l10n.save,
+              child: const Icon(Icons.save),
+            )
+          : null,
     );
   }
 
+  String _getPriorityName(TaskPriority p, AppLocalizations l10n) {
+    switch (p) {
+      case TaskPriority.urgent:
+        return l10n.urgent;
+      case TaskPriority.high:
+        return l10n.high;
+      case TaskPriority.medium:
+        return l10n.medium;
+      case TaskPriority.low:
+        return l10n.low;
+    }
+  }
+
   Future<void> _pickDate() async {
+    final now = DateTime.now().toUtc();
     final date = await showDatePicker(
       context: context,
-      initialDate: _dueDate ?? DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
+      initialDate: _dueDate ?? now,
+      firstDate: now,
+      lastDate: now.add(const Duration(days: 365)),
     );
     if (date != null) {
-      setState(() => _dueDate = date.toUtc());
+      if (mounted) {
+        setState(() => _dueDate = DateTime.utc(date.year, date.month, date.day));
+      }
     }
+  }
+
+  void _toggleSubtask(int index) {
+    setState(() {
+      _subtasks[index] = _subtasks[index].copyWith(
+        isCompleted: !_subtasks[index].isCompleted,
+        updatedAt: DateTime.now().toUtc(),
+      );
+    });
+  }
+
+  void _deleteSubtask(int index) {
+    setState(() {
+      _subtasks.removeAt(index);
+    });
+  }
+
+  void _addSubtask() {
+    if (_subtasksController.text.trim().isEmpty) return;
+    
+    final newSubtask = Task(
+      id: const Uuid().v4(),
+      content: _subtasksController.text.trim(),
+      priority: TaskPriority.medium,
+      createdAt: DateTime.now().toUtc(),
+      updatedAt: DateTime.now().toUtc(),
+    );
+    
+    setState(() {
+      _subtasks.add(newSubtask);
+      _subtasksController.clear();
+    });
   }
 
   Future<void> _save() async {
     if (_contentController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Content cannot be empty')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.contentCannotBeEmpty)),
+        );
+      }
       return;
     }
 
@@ -237,12 +336,16 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
 
       result.fold(
         (failure) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(failure.message)),
-          );
+          _logger.e('Failed to save task', error: failure);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(failure.message)),
+            );
+          }
         },
-        (task) {
-          if (mounted) Navigator.pop(context, task);
+        (savedTask) {
+          _logger.d('Task saved: ${savedTask.id}');
+          if (mounted) context.pop(savedTask);
         },
       );
     } finally {
@@ -251,36 +354,134 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   }
 
   Future<void> _confirmDelete() async {
-    final confirmed = await showDialog<bool>(
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await ConfirmDialog.show(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Task'),
-        content: const Text('Are you sure you want to delete this task?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
+      title: l10n.delete,
+      message: l10n.deleteConfirmation,
+      confirmText: l10n.yes,
+      cancelText: l10n.no,
     );
 
     if (confirmed == true) {
       setState(() => _isLoading = true);
       try {
-        await _deleteTask(widget.taskId!);
-        if (mounted) Navigator.pop(context);
+        final result = await _deleteTask(widget.taskId!);
+        result.fold(
+          (failure) {
+            _logger.e('Failed to delete task', error: failure);
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(failure.message)),
+              );
+            }
+          },
+          (_) {
+            _logger.d('Task deleted: ${widget.taskId}');
+            if (mounted) context.pop();
+          },
+        );
       } finally {
         if (mounted) setState(() => _isLoading = false);
       }
     }
+  }
+}
+
+/// Section for displaying and managing subtasks
+class _SubtasksSection extends StatelessWidget {
+  final List<Task> subtasks;
+  final Function(int) onToggle;
+  final Function(int) onDelete;
+  final VoidCallback onAdd;
+
+  const _SubtasksSection({
+    required this.subtasks,
+    required this.onToggle,
+    required this.onDelete,
+    required this.onAdd,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                l10n.subtasks,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.add),
+              tooltip: l10n.addSubtask,
+              onPressed: onAdd,
+            ),
+          ],
+        ),
+        if (subtasks.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Text(
+              l10n.noSubtasks,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
+        ...subtasks.asMap().entries.map((entry) {
+          final index = entry.key;
+          final subtask = entry.value;
+          return _SubtaskTile(
+            key: ValueKey(subtask.id),
+            subtask: subtask,
+            onToggle: () => onToggle(index),
+            onDelete: () => onDelete(index),
+          );
+        }).toList(),
+      ],
+    );
+  }
+}
+
+/// Tile for a single subtask
+class _SubtaskTile extends StatelessWidget {
+  final Task subtask;
+  final VoidCallback onToggle;
+  final VoidCallback onDelete;
+
+  const _SubtaskTile({
+    super.key,
+    required this.subtask,
+    required this.onToggle,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: ListTile(
+        leading: Checkbox(
+          value: subtask.isCompleted,
+          onChanged: (_) => onToggle(),
+        ),
+        title: Text(
+          subtask.content,
+          style: TextStyle(
+            decoration: subtask.isCompleted
+                ? TextDecoration.lineThrough
+                : TextDecoration.none,
+          ),
+        ),
+        trailing: IconButton(
+          icon: const Icon(Icons.delete_outline, size: 20),
+          onPressed: onDelete,
+        ),
+      ),
+    );
   }
 }
