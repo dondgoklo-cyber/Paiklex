@@ -320,7 +320,7 @@ class _DraggableKanbanTaskCard extends StatelessWidget {
 
   List<Task> _getTasksForColumn(BuildContext context, _KanbanColumnType type) {
     final state = context.read<TaskListCubit>().state;
-    if (state is! TaskListLoaded) return [];
+    if (state.status != TaskListStatus.loaded) return [];
     
     switch (type) {
       case _KanbanColumnType.todo:
