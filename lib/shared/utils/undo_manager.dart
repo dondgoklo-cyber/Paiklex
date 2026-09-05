@@ -6,9 +6,10 @@ import '../../core/utils/logger.dart';
 class UndoManager {
   static final UndoManager _instance = UndoManager._internal();
   factory UndoManager() => _instance;
-  UndoManager._internal();
+  UndoManager._internal() : _logger = AppLogger.forService('UndoManager');
 
-  final _logger = AppLogger.forService('UndoManager');
+  final AppLogger _logger;
+
   final _actions = <String, _UndoAction>{};
   final _history = <_UndoAction>[];
   static const _timeout = Duration(seconds: 5);
