@@ -1,0 +1,8 @@
+targets:
+  $default:
+    builders:
+      drift_dev:
+        options:
+          store_date_time_values_as_text: false
+          apply_converters_on_variables: true
+          scoped_dart_components: true

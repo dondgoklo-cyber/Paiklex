@@ -1,0 +1,40 @@
+# Monolith Tasks - AI Rules v5.0
+
+## Architecture
+- Feature-First structure
+- Clean Architecture: domain -> data -> presentation
+- UTC dates in DB, .toLocal() in UI only
+- Pure Dart in core/utils (no Flutter dependencies)
+
+## Tech Stack
+- Flutter 3.19+, Dart 3.3+
+- flutter_bloc + equatable
+- Drift (single API, @DataClassName on ALL tables)
+- go_router v14+ (state.pathParameters, NOT pathParams)
+- get_it ONLY (manual, NO injectable annotations!)
+- fpdart for Either<Failure, T>
+- table_calendar (NOT syncfusion)
+- flutter_local_notifications
+
+## Forbidden
+- @injectable, @LazySingleton, @lazySingleton (use manual get_it)
+- while(true) in Streams
+- File() without kIsWeb check
+- state.pathParams
+- freezed
+- syncfusion_* or other paid packages
+- print() (use logger)
+- DateTime without .toUtc() in DB
+- UUID in UI layer
+- handleError with return in Stream (use transform)
+- update().write() partial (use .replace())
+- firstWhere with throw in Stream (use getSingleOrNull)
+
+## Required
+- @DataClassName on ALL tables (TaskRow, ProjectRow, HabitRow, ReminderRow)
+- failures.dart with Failure base class
+- ErrorView, LoadingView, EmptyState widgets
+- All 4 DAOs (Task, Project, Habit, Reminder)
+- AppLocalizations for ALL strings
+- Minimum 1 unit test per UseCase
+- Doc comments on public APIs
