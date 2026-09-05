@@ -9,7 +9,7 @@ jobs:
   build:
     name: Build Android APK
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -23,7 +23,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'
+          flutter-version: '3.27.0'
           channel: 'stable'
           cache: true
 
@@ -34,10 +34,10 @@ jobs:
         run: flutter pub get
 
       - name: Accept Android licenses
-        run: yes | flutter doctor --android-licenses || true
+        run: yes | flutter doctor --android-licenses
 
       - name: Generate localization
-        run: flutter gen-l10n || echo "⚠️ Localization generation skipped (may already be generated)"
+        run: flutter gen-l10n
 
       - name: Build runner
         run: |
@@ -45,40 +45,26 @@ jobs:
           dart run build_runner build --delete-conflicting-outputs
 
       - name: Analyze code
-        run: flutter analyze || true
+        run: flutter analyze
 
       - name: Build Debug APK
-        run: flutter build apk --debug --verbose
+        run: flutter build apk --debug
 
       - name: Build Release APK
-        run: flutter build apk --release --verbose
+        run: flutter build apk --release
 
-      - name: List build artifacts
+      - name: Verify APK exists
         run: |
-          echo "=== Build artifacts ==="
-          find build/app/outputs -name "*.apk" -type f || echo "No APK files found"
+          if [ ! -f build/app/outputs/flutter-apk/app-release.apk ]; then
+            echo "\u274c Release APK not found!"
+            ls -la build/app/outputs/
+            exit 1
+          fi
+          echo "\u2705 Release APK found: $(ls -lh build/app/outputs/flutter-apk/app-release.apk)"
 
       - name: Upload APK artifacts
         uses: actions/upload-artifact@v4
-        if: always()
         with:
-          name: monolith-apks
-          path: |
-            build/app/outputs/flutter-apk/*.apk
-            build/app/outputs/apk/**/*.apk
+          name: monolith-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
           retention-days: 30
-          if-no-files-found: warn
-
-      - name: Build summary
-        if: always()
-        run: |
-          echo "## 🏗️ Build Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Generated APK files:" >> $GITHUB_STEP_SUMMARY
-          find build/app/outputs -name "*.apk" -type f -exec ls -lh {} \; >> $GITHUB_STEP_SUMMARY 2>/dev/null || echo "No APK files generated" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### How to download:" >> $GITHUB_STEP_SUMMARY
-          echo "1. Go to Actions tab" >> $GITHUB_STEP_SUMMARY
-          echo "2. Click on this workflow run" >> $GITHUB_STEP_SUMMARY
-          echo "3. Scroll down to 'Artifacts' section" >> $GITHUB_STEP_SUMMARY
-          echo "4. Download 'monolith-apks'" >> $GITHUB_STEP_SUMMARY

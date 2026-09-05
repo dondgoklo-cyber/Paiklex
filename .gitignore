@@ -1,0 +1,45 @@
+# Misc
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom
+.buildlog
+.history
+.svn/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# Android
+local.properties
+*.iml
+.gradle/
+/android/key.properties
+/android/local.properties
+
+# iOS
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.xcworkspace/
+xcode/
+
+# macOS
+.DS_Store
+
+# Flutter
+.dart_tool/
+.packages
+.pub/
+build/
+
+# Environment
+.env
+.env.local
+.env.*.local
