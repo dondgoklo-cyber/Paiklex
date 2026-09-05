@@ -96,6 +96,7 @@
   "projectNameCannotBeEmpty": "Project name cannot be empty",
   "editProject": "Edit Project",
   "color": "Color",
+  "projectColor": "Project Color",
   "archive": "Archive",
   "unarchive": "Unarchive",
   "archived": "Archived",
@@ -110,12 +111,16 @@
   "editHabit": "Edit Habit",
   "frequency": "Frequency",
   "dueToday": "Due Today",
-  "streak": "Streak",
-  "best": "Best",
+  "currentStreak": "Current Streak",
+  "bestStreak": "Best Streak",
   "complete": "Complete",
+  "completeHabit": "Complete",
   "deleteHabitConfirmation": "Are you sure you want to delete this habit?",
   "addReminder": "Add Reminder",
   "noReminders": "No Reminders",
   "noRemindersDesc": "Create a reminder to get notified",
-  "cancel": "Cancel"
+  "reminderTitle": "Reminder Title",
+  "reminderTime": "Reminder Time",
+  "cancelReminder": "Cancel Reminder",
+  "triggered": "Triggered"
 }
