@@ -56,14 +56,30 @@ jobs:
       - name: Build Release APK
         run: flutter build apk --release
 
-      - name: Verify APK exists
+      - name: Calculate APK SHA256 and size
         run: |
-          if [ ! -f build/app/outputs/flutter-apk/app-release.apk ]; then
+          APK_PATH="build/app/outputs/flutter-apk/app-release.apk"
+          if [ ! -f "$APK_PATH" ]; then
             echo "Release APK not found!"
             ls -la build/app/outputs/
             exit 1
           fi
-          echo "Release APK found: $(ls -lh build/app/outputs/flutter-apk/app-release.apk)"
+          APK_SIZE=$(stat -c%s "$APK_PATH")
+          APK_SHA256=$(sha256sum "$APK_PATH" | awk '{print $1}')
+          echo "APK size: $APK_SIZE bytes"
+          echo "APK size (human): $(du -h "$APK_PATH" | cut -f1)"
+          echo "APK SHA256: $APK_SHA256"
+          echo "APK path: $APK_PATH"
+          echo "apk_size=$APK_SIZE" >> $GITHUB_OUTPUT
+          echo "apk_sha256=$APK_SHA256" >> $GITHUB_OUTPUT
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: paiklex-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+          retention-days: 7
 
       - name: Build Release AAB
         run: flutter build appbundle --release
@@ -75,7 +91,9 @@ jobs:
             ls -la build/app/outputs/
             exit 1
           fi
-          echo "Release AAB found: $(ls -lh build/app/outputs/bundle/release/app-release.aab)"
+          AAB_SIZE=$(stat -c%s build/app/outputs/bundle/release/app-release.aab)
+          echo "AAB size: $AAB_SIZE bytes"
+          echo "AAB size (human): $(du -h build/app/outputs/bundle/release/app-release.aab | cut -f1)"
 
       - name: Build Web Release
         run: flutter build web --release
@@ -87,4 +105,6 @@ jobs:
             ls -la build/
             exit 1
           fi
+          WEB_SIZE=$(du -sh build/web | cut -f1)
+          echo "Web build size: $WEB_SIZE"
           echo "Web build directory found"
