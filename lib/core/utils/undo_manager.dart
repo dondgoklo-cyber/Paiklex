@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:logger/logger.dart';
 import 'date_utils.dart';
-import '../utils/logger.dart';
 
 /// Types of undoable actions
 enum UndoActionType {
@@ -69,11 +69,17 @@ class UndoManager {
   factory UndoManager() => _instance;
 
   UndoManager._internal() {
-    _logger = AppLogger.forService('UndoManager');
+    _logger = Logger(
+      printer: PrettyPrinter(
+        colors: true,
+        printTime: true,
+        methodCount: 0,
+      ),
+    );
     _cleanupTimer = Timer.periodic(_cleanupInterval, (_) => _cleanupExpired());
   }
 
-  final AppLogger _logger;
+  final Logger _logger;
   final List<UndoableAction> _actions = [];
   final Duration _cleanupInterval = const Duration(seconds: 1);
   Timer? _cleanupTimer;
@@ -98,7 +104,7 @@ class UndoManager {
     );
 
     _actions.add(UndoableAction(action: action, onUndo: onUndo));
-    _logger.debug('Added undo action: ${action.type} for ${action.id}');
+    _logger.d('Added undo action: ${action.type} for ${action.id}');
 
     // Trim history if too large
     if (_actions.length > _maxHistorySize) {
@@ -112,13 +118,13 @@ class UndoManager {
   Future<bool> undo(String actionId) async {
     final index = _actions.indexWhere((a) => a.action.id == actionId);
     if (index == -1) {
-      _logger.warning('Undo action not found: $actionId');
+      _logger.w('Undo action not found: $actionId');
       return false;
     }
 
     final undoableAction = _actions[index];
     if (undoableAction.action.isExpired) {
-      _logger.warning('Undo action expired: $actionId');
+      _logger.w('Undo action expired: $actionId');
       _actions.removeAt(index);
       return false;
     }
@@ -126,10 +132,10 @@ class UndoManager {
     try {
       await undoableAction.onUndo();
       _actions.removeAt(index);
-      _logger.debug('Successfully undid action: $actionId');
+      _logger.d('Successfully undid action: $actionId');
       return true;
     } catch (e) {
-      _logger.error('Failed to undo action $actionId: $e');
+      _logger.e('Failed to undo action $actionId: $e');
       return false;
     }
   }
@@ -153,19 +159,19 @@ class UndoManager {
   /// Clear all actions
   void clear() {
     _actions.clear();
-    _logger.debug('Cleared all undo actions');
+    _logger.d('Cleared all undo actions');
   }
 
   /// Clear actions of a specific type
   void clearByType(UndoActionType type) {
     _actions.removeWhere((a) => a.action.type == type);
-    _logger.debug('Cleared undo actions of type: $type');
+    _logger.d('Cleared undo actions of type: $type');
   }
 
   /// Remove a specific action by ID
   void removeAction(String actionId) {
     _actions.removeWhere((a) => a.action.id == actionId);
-    _logger.debug('Removed undo action: $actionId');
+    _logger.d('Removed undo action: $actionId');
   }
 
   /// Cleanup expired actions
@@ -175,7 +181,7 @@ class UndoManager {
     final removedCount = beforeCount - _actions.length;
 
     if (removedCount > 0) {
-      _logger.debug('Cleaned up $removedCount expired undo actions');
+      _logger.d('Cleaned up $removedCount expired undo actions');
     }
   }
 
@@ -189,7 +195,7 @@ class UndoManager {
     _cleanupTimer?.cancel();
     _cleanupTimer = null;
     _actions.clear();
-    _logger.debug('UndoManager disposed');
+    _logger.d('UndoManager disposed');
   }
 }
 

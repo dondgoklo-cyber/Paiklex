@@ -1,3 +1,4 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:uuid/uuid.dart';
 import '../core/utils/undo_manager.dart';
@@ -32,7 +33,7 @@ import '../features/habits/domain/repositories/habit_repository.dart';
 import '../features/habits/domain/usecases/watch_habits.dart';
 import '../features/habits/domain/usecases/create_habit.dart';
 import '../features/habits/domain/usecases/update_habit.dart';
-import '../features/habits/domain/usecases/get_habits_due_today.dart';
+
 import '../features/habits/presentation/cubits/habit_list_cubit.dart';
 
 // Reminders
@@ -62,6 +63,11 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton(() => ProjectDao(db));
   getIt.registerLazySingleton(() => HabitDao(db));
   getIt.registerLazySingleton(() => ReminderDao(db));
+
+  // ==========================================================================
+  // Database access for repositories
+  // ==========================================================================
+  getIt.registerLazySingleton<AppDatabase>(() => db);
 
   // ==========================================================================
   // Utils
@@ -176,7 +182,7 @@ Future<void> setupDependencies() async {
   // Services
   // ==========================================================================
   getIt.registerLazySingleton<NotificationService>(() => NotificationService());
-  getIt.registerLazySingleton<SyncService>(() => SyncService(db));
+  getIt.registerLazySingleton<SyncService>(() => SyncService(getIt<AppDatabase>()));
   getIt.registerLazySingleton<ThemeService>(() => ThemeService());
   getIt.registerLazySingleton<LocaleService>(() => LocaleService());
 
