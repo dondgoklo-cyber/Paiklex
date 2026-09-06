@@ -23,6 +23,9 @@ abstract class TaskRepository {
   /// Toggle task completion status
   Future<fpdart.Either<Failure, Task>> toggle(String taskId);
 
+  /// Complete task with recurrence handling
+  Future<fpdart.Either<Failure, Task>> complete(String taskId);
+
   /// Reorder task in list
   Future<fpdart.Either<Failure, void>> reorder(String taskId, int newIndex);
 
@@ -31,4 +34,7 @@ abstract class TaskRepository {
 
   /// Get all tasks once (not as stream)
   Future<fpdart.Either<Failure, List<Task>>> getAllOnce();
+
+  /// Get recurring tasks
+  Future<fpdart.Either<Failure, List<Task>>> getRecurringTasks();
 }

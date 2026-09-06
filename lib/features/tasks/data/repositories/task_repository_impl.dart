@@ -92,6 +92,57 @@ class TaskRepositoryImpl implements TaskRepository {
   }
 
   @override
+  Future<fpdart.Either<Failure, Task>> complete(String taskId) async {
+    try {
+      final currentRow = await _dao.getById(taskId);
+      if (currentRow == null) return fpdart.Left(NotFoundFailure('Task', taskId));
+      
+      final current = currentRow.toEntity();
+      
+      // If already completed, return unchanged
+      if (current.isCompleted) {
+        return fpdart.Right(current);
+      }
+      
+      // Complete the current task
+      final completed = current.complete();
+      await _dao.updateTask(completed.toCompanion());
+      
+      // If this is a recurring task, create the next occurrence
+      if (current.isRecurring) {
+        final nextTask = current.createNextOccurrence();
+        if (nextTask != null) {
+          // Generate a new ID for the next occurrence
+          final uuid = getIt.get<Uuid>();
+          final nextWithId = nextTask.copyWith(id: uuid.v4());
+          await _dao.insertTask(nextWithId.toCompanion());
+          _logger.d('Created next occurrence for recurring task: ${nextWithId.id}');
+        }
+      }
+      
+      return fpdart.Right(completed);
+    } catch (e, s) {
+      _logger.e('complete failed', error: e, stackTrace: s);
+      return fpdart.Left(DatabaseFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<fpdart.Either<Failure, List<Task>>> getRecurringTasks() async {
+    try {
+      final allRows = await _dao.getAllOnce();
+      final recurringTasks = allRows
+          .where((row) => row.recurrence != null)
+          .map((row) => row.toEntity())
+          .toList();
+      return fpdart.Right(recurringTasks);
+    } catch (e, s) {
+      _logger.e('getRecurringTasks failed', error: e, stackTrace: s);
+      return fpdart.Left(DatabaseFailure(e.toString()));
+    }
+  }
+
+  @override
   Future<fpdart.Either<Failure, void>> reorder(String taskId, int newIndex) async {
     try {
       final current = await _dao.getById(taskId);

@@ -85,6 +85,127 @@ class Task extends Equatable {
     );
   }
 
+  /// Completes the task and returns the completed version
+  /// For recurring tasks, the caller should create a new task for the next occurrence
+  Task complete() {
+    final now = DateTime.now().toUtc();
+    
+    if (isCompleted) {
+      return this;
+    }
+    
+    return copyWith(
+      isCompleted: true,
+      completedAt: () => now,
+      updatedAt: now,
+    );
+  }
+
+  /// Creates a new task instance for the next recurrence occurrence
+  /// Returns null if this task is not recurring or has no due date
+  Task? createNextOccurrence() {
+    if (!isRecurring || dueDate == null) return null;
+    
+    final now = DateTime.now().toUtc();
+    final nextDueDate = _calculateNextOccurrence(dueDate!, now);
+    
+    if (nextDueDate == null) return null;
+    
+    return Task(
+      id: '', // Empty string, will be replaced with UUID by repository
+      projectId: projectId,
+      parentTaskId: id, // Link to original task
+      content: content,
+      description: description,
+      isCompleted: false,
+      priority: priority,
+      dueDate: nextDueDate,
+      duration: duration,
+      tags: tags,
+      recurrence: recurrence,
+      orderIndex: orderIndex,
+      createdAt: now,
+      updatedAt: now,
+      completedAt: null,
+    );
+  }
+
+  /// Calculates the next occurrence date based on recurrence pattern
+  /// Returns null if recurrence is not set or dueDate is null
+  DateTime? _calculateNextOccurrence(DateTime currentDue, DateTime now) {
+    if (recurrence == null) return null;
+    
+    // currentDue is the original due date of this occurrence
+    // We need to find the next occurrence after now
+    
+    DateTime next;
+    
+    switch (recurrence) {
+      case 'daily':
+        // Next day from the original due date pattern
+        next = DateTime.utc(currentDue.year, currentDue.month, currentDue.day + 1);
+        // If we're past that date, find the next one
+        while (next.isBefore(now) || next == now) {
+          next = next.add(const Duration(days: 1));
+        }
+        return next;
+      case 'weekly':
+        // Same day of week, next week
+        next = currentDue.add(const Duration(days: 7));
+        while (next.isBefore(now) || next == now) {
+          next = next.add(const Duration(days: 7));
+        }
+        return next;
+      case 'monthly':
+        // Same day of month, next month
+        next = _addMonths(currentDue, 1);
+        while (next.isBefore(now) || next == now) {
+          next = _addMonths(next, 1);
+        }
+        return next;
+      case 'yearly':
+        // Same day of year, next year
+        next = _addYears(currentDue, 1);
+        while (next.isBefore(now) || next == now) {
+          next = _addYears(next, 1);
+        }
+        return next;
+      default:
+        return null;
+    }
+  }
+
+  /// Helper to add months to a date, handling overflow
+  DateTime _addMonths(DateTime date, int months) {
+    var year = date.year + (date.month + months - 1) ~/ 12;
+    var month = (date.month + months - 1) % 12 + 1;
+    var day = date.day;
+    
+    // Handle day overflow (e.g., Jan 31 -> Feb)
+    var result = DateTime.utc(year, month, day);
+    if (result.month != month) {
+      // Day doesn't exist in target month, use last day
+      result = DateTime.utc(year, month + 1, 0);
+    }
+    return result;
+  }
+
+  /// Helper to add years to a date, handling leap year edge case
+  DateTime _addYears(DateTime date, int years) {
+    final newYear = date.year + years;
+    
+    // Special handling for Feb 29
+    if (date.month == 2 && date.day == 29) {
+      // Check if new year is a leap year
+      final isLeap = (newYear % 4 == 0 && newYear % 100 != 0) || (newYear % 400 == 0);
+      if (!isLeap) {
+        return DateTime.utc(newYear, 2, 28);
+      }
+    }
+    
+    return DateTime.utc(newYear, date.month, date.day);
+  }
+
   /// Returns true if this task has subtasks
   bool get hasSubtasks => parentTaskId != null;
 
