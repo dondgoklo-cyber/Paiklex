@@ -19,6 +19,10 @@ class Task extends Equatable {
   final DateTime updatedAt;
   final DateTime? completedAt;
 
+  // Kanban column status - separate from orderIndex
+  // orderIndex is for sorting within a column, status is for column assignment
+  final String? kanbanStatus; // 'todo', 'doing', 'done'
+
   const Task({
     required this.id,
     this.projectId,
