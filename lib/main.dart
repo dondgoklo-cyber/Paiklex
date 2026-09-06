@@ -10,9 +10,15 @@ Future<void> main() async {
     WidgetsFlutterBinding.ensureInitialized();
     await setupDependencies();
     
-    // Initialize notification service
+    // Initialize notification service and restore scheduled notifications
     final notificationService = getIt.get<NotificationService>();
     await notificationService.init();
+    
+    // Restore all notifications from database
+    final reminderRepo = getIt.get<ReminderRepository>();
+    if (reminderRepo is ReminderRepositoryImpl) {
+      await reminderRepo.restoreAllNotifications();
+    }
     
     runApp(const MonolithApp());
   });

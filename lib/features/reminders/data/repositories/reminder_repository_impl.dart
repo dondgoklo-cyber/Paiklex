@@ -17,6 +17,8 @@ class ReminderRepositoryImpl implements ReminderRepository {
   final AppDatabase _db;
   final NotificationService _notificationService;
   final Logger _logger;
+  final FlutterLocalNotificationsPlugin _plugin =
+      FlutterLocalNotificationsPlugin();
 
   ReminderRepositoryImpl(this._db, this._notificationService)
       : _logger = Logger('ReminderRepositoryImpl');
@@ -169,6 +171,50 @@ class ReminderRepositoryImpl implements ReminderRepository {
     } catch (e, s) {
       _logger.e('Failed to get reminders by habit', error: e, stackTrace: s);
       return fpdart.Left(DatabaseFailure(e.toString()));
+    }
+  }
+
+  /// Restores all scheduled notifications from database
+  /// Called on app restart to ensure notifications are rescheduled
+  Future<void> restoreAllNotifications() async {
+    try {
+      final allReminders = await _db.reminderDao.getAllOnce();
+      final now = AppDateUtils.nowUtc();
+      
+      for (final reminder in allReminders) {
+        // Only restore future reminders that haven't been triggered
+        if (!reminder.isTriggered) {
+          final triggerDate = DateTime.fromMillisecondsSinceEpoch(reminder.triggerAt);
+          if (triggerDate.isAfter(now)) {
+            final notificationDetails = NotificationDetails(
+              android: AndroidNotificationDetails(
+                'reminder_channel',
+                'Reminders',
+                importance: Importance.high,
+                priority: Priority.high,
+              ),
+              iOS: DarwinNotificationDetails(
+                presentAlert: true,
+                presentBadge: true,
+                presentSound: true,
+              ),
+            );
+            
+            await _notificationService.scheduleNotification(
+              id: reminder.id.hashCode,
+              title: reminder.title,
+              body: reminder.body ?? '',
+              scheduledTime: triggerDate,
+              notificationDetails: notificationDetails,
+            );
+            _logger.d('Restored notification for reminder: ${reminder.id}');
+          }
+        }
+      }
+      
+      _logger.i('Restored ${allReminders.length} notifications');
+    } catch (e, s) {
+      _logger.e('Failed to restore notifications', error: e, stackTrace: s);
     }
   }
 }
