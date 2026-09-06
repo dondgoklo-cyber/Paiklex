@@ -1,10 +1,10 @@
-import 'package:fpdart/fpdart.dart';
+import "package:fpdart/fpdart.dart" as fpdart;
 import 'package:drift/drift.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:logger/logger.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz_data;
 import '../../../../core/utils/date_utils.dart';
-import '../../../../core/utils/logger.dart';
 import '../../../../core/errors/failures.dart';
 import '../../domain/entities/reminder.dart';
 import '../../domain/repositories/reminder_repository.dart';
@@ -22,80 +22,80 @@ class ReminderRepositoryImpl implements ReminderRepository {
       : _logger = Logger('ReminderRepositoryImpl');
 
   @override
-  Stream<Either<Failure, List<Reminder>>> watchAll() {
+  Stream<fpdart.Either<Failure, List<Reminder>>> watchAll() {
     return _db.reminderDao.watchAll().map((rows) {
       try {
-        return Right(rows.map((row) => row.toEntity()).toList());
+        return fpdart.Right(rows.map((row) => row.toEntity()).toList());
       } catch (e, s) {
         _logger.e('Failed to map reminder rows', error: e, stackTrace: s);
-        return Left(DatabaseFailure(e.toString()));
+        return fpdart.Left(DatabaseFailure(e.toString()));
       }
     }).handleError((e, s) {
       _logger.e('Failed to watch reminders', error: e, stackTrace: s);
-      return Left(DatabaseFailure(e.toString()));
+      return fpdart.Left(DatabaseFailure(e.toString()));
     });
   }
 
   @override
-  Future<Either<Failure, List<Reminder>>> getAllOnce() async {
+  Future<fpdart.Either<Failure, List<Reminder>>> getAllOnce() async {
     try {
       final rows = await _db.reminderDao.getAllOnce();
-      return Right(rows.map((row) => row.toEntity()).toList());
+      return fpdart.Right(rows.map((row) => row.toEntity()).toList());
     } catch (e, s) {
       _logger.e('Failed to get all reminders', error: e, stackTrace: s);
-      return Left(DatabaseFailure(e.toString()));
+      return fpdart.Left(DatabaseFailure(e.toString()));
     }
   }
 
   @override
-  Future<Either<Failure, Reminder?>> getById(String reminderId) async {
+  Future<fpdart.Either<Failure, Reminder?>> getById(String reminderId) async {
     try {
       final row = await _db.reminderDao.getById(reminderId);
-      return Right(row?.toEntity());
+      return fpdart.Right(row?.toEntity());
     } catch (e, s) {
       _logger.e('Failed to get reminder by ID', error: e, stackTrace: s);
-      return Left(DatabaseFailure(e.toString()));
+      return fpdart.Left(DatabaseFailure(e.toString()));
     }
   }
 
   @override
-  Future<Either<Failure, Reminder>> create(Reminder reminder) async {
+  Future<fpdart.Either<Failure, Reminder>> create(Reminder reminder) async {
     try {
-      await _db.reminderDao.insert(reminder.toCompanion());
-      return Right(reminder);
+      await _db.reminderDao.insertReminder(reminder.toCompanion());
+      return fpdart.Right(reminder);
     } catch (e, s) {
       _logger.e('Failed to create reminder', error: e, stackTrace: s);
-      return Left(DatabaseFailure(e.toString()));
+      return fpdart.Left(DatabaseFailure(e.toString()));
     }
   }
 
   @override
-  Future<Either<Failure, Reminder>> update(Reminder reminder) async {
+  Future<fpdart.Either<Failure, Reminder>> update(Reminder reminder) async {
     try {
-      await _db.reminderDao.update(reminder.toCompanion());
-      return Right(reminder);
+      await _db.reminderDao.updateReminder(reminder.toCompanion());
+      return fpdart.Right(reminder);
     } catch (e, s) {
       _logger.e('Failed to update reminder', error: e, stackTrace: s);
-      return Left(DatabaseFailure(e.toString()));
+      return fpdart.Left(DatabaseFailure(e.toString()));
     }
   }
 
   @override
-  Future<Either<Failure, void>> delete(String reminderId) async {
+  Future<fpdart.Either<Failure, void>> delete(String reminderId) async {
     try {
-      await _db.reminderDao.delete(reminderId);
-      return const Right(null);
+      await _db.reminderDao.deleteReminder(reminderId);
+      return const fpdart.Right(null);
     } catch (e, s) {
       _logger.e('Failed to delete reminder', error: e, stackTrace: s);
-      return Left(DatabaseFailure(e.toString()));
+      return fpdart.Left(DatabaseFailure(e.toString()));
     }
   }
 
   @override
-  Future<Either<Failure, Reminder>> schedule(Reminder reminder) async {
+  Future<fpdart.Either<Failure, Reminder>> schedule(Reminder reminder) async {
     try {
       // Create the reminder in the database
-      await _db.reminderDao.insert(reminder.toCompanion());
+      await _db.reminderDao.insertReminder(reminder.toCompanion());
 
       // Schedule the notification
       tz_data.initializeTimeZones();
@@ -127,48 +127,48 @@ class ReminderRepositoryImpl implements ReminderRepository {
         );
       }
 
-      return Right(reminder);
+      return fpdart.Right(reminder);
     } catch (e, s) {
       _logger.e('Failed to schedule reminder', error: e, stackTrace: s);
-      return Left(DatabaseFailure(e.toString()));
+      return fpdart.Left(DatabaseFailure(e.toString()));
     }
   }
 
   @override
-  Future<Either<Failure, void>> cancel(String reminderId) async {
+  Future<fpdart.Either<Failure, void>> cancel(String reminderId) async {
     try {
       // Delete from database
-      await _db.reminderDao.delete(reminderId);
+      await _db.reminderDao.deleteReminder(reminderId);
 
       // Cancel the notification
       await _notificationService.cancelNotification(reminderId.hashCode);
 
-      return const Right(null);
+      return const fpdart.Right(null);
     } catch (e, s) {
       _logger.e('Failed to cancel reminder', error: e, stackTrace: s);
-      return Left(DatabaseFailure(e.toString()));
+      return fpdart.Left(DatabaseFailure(e.toString()));
     }
   }
 
   @override
-  Future<Either<Failure, List<Reminder>>> getByTask(String taskId) async {
+  Future<fpdart.Either<Failure, List<Reminder>>> getByTask(String taskId) async {
     try {
       final rows = await _db.reminderDao.getByTask(taskId);
-      return Right(rows.map((row) => row.toEntity()).toList());
+      return fpdart.Right(rows.map((row) => row.toEntity()).toList());
     } catch (e, s) {
       _logger.e('Failed to get reminders by task', error: e, stackTrace: s);
-      return Left(DatabaseFailure(e.toString()));
+      return fpdart.Left(DatabaseFailure(e.toString()));
     }
   }
 
   @override
-  Future<Either<Failure, List<Reminder>>> getByHabit(String habitId) async {
+  Future<fpdart.Either<Failure, List<Reminder>>> getByHabit(String habitId) async {
     try {
       final rows = await _db.reminderDao.getByHabit(habitId);
-      return Right(rows.map((row) => row.toEntity()).toList());
+      return fpdart.Right(rows.map((row) => row.toEntity()).toList());
     } catch (e, s) {
       _logger.e('Failed to get reminders by habit', error: e, stackTrace: s);
-      return Left(DatabaseFailure(e.toString()));
+      return fpdart.Left(DatabaseFailure(e.toString()));
     }
   }
 }

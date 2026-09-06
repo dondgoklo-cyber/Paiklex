@@ -54,7 +54,20 @@ class Habit extends Equatable {
     final now = DateTime.now().toUtc();
     final dateOnlyToday = DateTime.utc(now.year, now.month, now.day);
     
-    int newStreak = streak + 1;
+    // Check if already completed today - if so, return unchanged
+    if (lastCompletedAt != null) {
+      final lastDate = DateTime.utc(
+        lastCompletedAt!.year,
+        lastCompletedAt!.month,
+        lastCompletedAt!.day,
+      );
+      if (lastDate == dateOnlyToday) {
+        // Already completed today - return unchanged
+        return this;
+      }
+    }
+    
+    int newStreak = 1;
     int newBestStreak = bestStreak;
     
     // Check if last completion was yesterday
@@ -69,9 +82,6 @@ class Habit extends Equatable {
       if (lastDate == yesterday) {
         // Continue streak
         newStreak = streak + 1;
-      } else if (lastDate != dateOnlyToday) {
-        // Reset streak if not consecutive
-        newStreak = 1;
       }
     }
     
@@ -108,6 +118,20 @@ class Habit extends Equatable {
       lastCompletedAt!.day,
     );
     
+    if (frequency == 'weekly') {
+      // For weekly: check if today is the day of week for this habit
+      // Based on the day of week when it was last completed
+      final lastDayOfWeek = lastDate.weekday;
+      return today.weekday == lastDayOfWeek;
+    }
+    
+    if (frequency == 'monthly') {
+      // For monthly: check if today is the day of month for this habit
+      final lastDayOfMonth = lastDate.day;
+      return today.day == lastDayOfMonth;
+    }
+    
+    // Default: not due if already completed today
     return lastDate != today;
   }
 

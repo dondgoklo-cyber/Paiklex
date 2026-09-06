@@ -1,4 +1,4 @@
-import 'package:fpdart/fpdart.dart';
+import "package:fpdart/fpdart.dart" as fpdart;
 import '../../../../core/errors/failures.dart';
 import '../../../../core/utils/nlp_parser.dart';
 import '../entities/task.dart';
@@ -13,9 +13,9 @@ class ParseAndCreateTask {
 
   /// Parses input string and creates a task
   /// Example: "buy milk tomorrow at 18:00 #shopping p1 every day"
-  Future<Either<Failure, Task>> call(String input) async {
+  Future<fpdart.Either<Failure, Task>> call(String input) async {
     if (input.trim().isEmpty) {
-      return const Left(ValidationFailure('Input is empty'));
+      return const fpdart.Left(ValidationFailure('Input is empty'));
     }
 
     final parsed = NlpParser.parse(input, locale: locale);

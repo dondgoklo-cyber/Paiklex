@@ -1,4 +1,4 @@
-import 'package:fpdart/fpdart.dart';
+import "package:fpdart/fpdart.dart" as fpdart;
 import '../entities/habit.dart';
 import '../repositories/habit_repository.dart';
 import '../../../../core/errors/failures.dart';
@@ -12,7 +12,7 @@ class CreateHabit {
   const CreateHabit(this._repo, this._uuid);
 
   /// Creates a new habit
-  Future<Either<Failure, Habit>> call(String title, {String? projectId, String frequency = 'daily'}) async {
+  Future<fpdart.Either<Failure, Habit>> call(String title, {String? projectId, String frequency = 'daily'}) async {
     final now = DateTime.now().toUtc();
     final habit = Habit(
       id: _uuid.v4(),
@@ -24,7 +24,7 @@ class CreateHabit {
     );
 
     if (habit.title.isEmpty) {
-      return Left(ValidationFailure('Habit title cannot be empty'));
+      return fpdart.Left(ValidationFailure('Habit title cannot be empty'));
     }
 
     return _repo.create(habit);

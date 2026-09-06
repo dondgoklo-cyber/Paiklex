@@ -1,4 +1,4 @@
-import 'package:fpdart/fpdart.dart';
+import "package:fpdart/fpdart.dart" as fpdart;
 import '../entities/reminder.dart';
 import '../repositories/reminder_repository.dart';
 import '../../../../core/errors/failures.dart';
@@ -12,7 +12,7 @@ class CreateReminder {
   const CreateReminder(this._repo, this._uuid);
 
   /// Creates a new reminder
-  Future<Either<Failure, Reminder>> call({
+  Future<fpdart.Either<Failure, Reminder>> call({
     String? taskId,
     String? habitId,
     required DateTime triggerAt,
@@ -30,7 +30,7 @@ class CreateReminder {
     );
 
     if (reminder.title.isEmpty) {
-      return Left(ValidationFailure('Reminder title cannot be empty'));
+      return fpdart.Left(ValidationFailure('Reminder title cannot be empty'));
     }
 
     return _repo.create(reminder);

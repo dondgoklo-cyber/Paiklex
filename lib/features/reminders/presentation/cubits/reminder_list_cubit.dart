@@ -1,9 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:fpdart/fpdart.dart';
+import "package:fpdart/fpdart.dart" as fpdart;
+import 'package:logger/logger.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/utils/undo_manager.dart';
-import '../../../../core/utils/logger.dart';
 import '../../domain/entities/reminder.dart';
 import '../../domain/usecases/watch_reminders.dart';
 import '../../domain/usecases/create_reminder.dart';
@@ -34,7 +34,7 @@ class ReminderListCubit extends Cubit<ReminderListState> {
     this._scheduleReminder,
     this._cancelReminder,
   ) : _logger = Logger('ReminderListCubit'),
-       super(const ReminderListState());
+      super(const ReminderListState());
 
   /// Starts watching reminders
   void watch() {

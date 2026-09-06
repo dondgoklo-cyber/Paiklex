@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
+import 'package:logger/logger.dart';
 import '../../../../app/di.dart';
 import '../../../../core/utils/date_utils.dart';
-import '../../../../core/utils/logger.dart';
 import '../../../../shared/widgets/loading_view.dart';
 import '../../../../shared/widgets/confirm_dialog.dart';
 import '../../domain/entities/task.dart';

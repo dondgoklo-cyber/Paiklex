@@ -9,6 +9,11 @@ Future<void> main() async {
   await AppErrorBoundary.run(() async {
     WidgetsFlutterBinding.ensureInitialized();
     await setupDependencies();
+    
+    // Initialize notification service
+    final notificationService = getIt.get<NotificationService>();
+    await notificationService.init();
+    
     runApp(const MonolithApp());
   });
 }

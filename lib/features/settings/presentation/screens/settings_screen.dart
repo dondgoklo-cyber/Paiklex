@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
+import 'package:logger/logger.dart';
 import '../../../../app/di.dart';
 import '../../../../features/settings/data/theme_service.dart';
 import '../../../../features/settings/data/locale_service.dart';
 import '../../../../features/sync/data/sync_service.dart';
-import '../../../../core/utils/logger.dart';
 
 /// Settings screen with theme switcher, language switcher, and export/import
 class SettingsScreen extends StatelessWidget {

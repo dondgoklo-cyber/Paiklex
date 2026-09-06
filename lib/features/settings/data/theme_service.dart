@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:logger/logger.dart';
-import '../../../../core/utils/logger.dart';
 
 /// Service for managing application theme mode
 class ThemeService extends ChangeNotifier {
   static const _key = 'theme_mode';
   ThemeMode _mode = ThemeMode.system;
   final Logger _logger = Logger('ThemeService');
+
+  ThemeService();
 
   /// Current theme mode
   ThemeMode get themeMode => _mode;

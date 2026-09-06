@@ -1,4 +1,4 @@
-import 'package:fpdart/fpdart.dart';
+import "package:fpdart/fpdart.dart" as fpdart;
 import '../../../../core/errors/failures.dart';
 import '../entities/task.dart';
 import '../repositories/task_repository.dart';
@@ -10,5 +10,5 @@ class ToggleTask {
   const ToggleTask(this._repo);
 
   /// Toggles the completion status of a task
-  Future<Either<Failure, Task>> call(String taskId) => _repo.toggle(taskId);
+  Future<fpdart.Either<Failure, Task>> call(String taskId) => _repo.toggle(taskId);
 }

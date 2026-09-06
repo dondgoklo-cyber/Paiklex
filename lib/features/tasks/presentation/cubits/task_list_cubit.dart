@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:fpdart/fpdart.dart';
+import "package:fpdart/fpdart.dart" as fpdart;
 import '../../../../core/errors/failures.dart';
 import '../../../../core/utils/undo_manager.dart';
 import '../../domain/entities/task.dart';
@@ -18,7 +18,7 @@ class TaskListCubit extends Cubit<TaskListState> {
   final ToggleTask _toggle;
   final DeleteTask _delete;
   final CreateTask _create;
-  StreamSubscription<Either<Failure, List<Task>>>? _sub;
+  StreamSubscription<fpdart.Either<Failure, List<Task>>>? _sub;
 
   TaskListCubit(this._watchAll, this._toggle, this._delete, this._create)
       : super(const TaskListState());

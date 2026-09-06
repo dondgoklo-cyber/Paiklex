@@ -1,4 +1,4 @@
-import 'package:fpdart/fpdart.dart';
+import "package:fpdart/fpdart.dart" as fpdart;
 import '../../../../core/errors/failures.dart';
 import '../entities/task.dart';
 import '../repositories/task_repository.dart';
@@ -10,7 +10,7 @@ class GetTask {
   const GetTask(this._repo);
 
   /// Gets a task by ID
-  Future<Either<Failure, Task?>> call(String taskId) => _repo.getById(taskId);
+  Future<fpdart.Either<Failure, Task?>> call(String taskId) => _repo.getById(taskId);
 }
 
 /// Use case for getting all tasks once
@@ -20,5 +20,5 @@ class GetAllTasks {
   const GetAllTasks(this._repo);
 
   /// Gets all tasks once (not as stream)
-  Future<Either<Failure, List<Task>>> call() => _repo.getAllOnce();
+  Future<fpdart.Either<Failure, List<Task>>> call() => _repo.getAllOnce();
 }

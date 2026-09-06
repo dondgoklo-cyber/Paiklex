@@ -1,4 +1,4 @@
-import 'package:fpdart/fpdart.dart';
+import "package:fpdart/fpdart.dart" as fpdart;
 import '../entities/habit.dart';
 import '../repositories/habit_repository.dart';
 import '../../../../core/errors/failures.dart';
@@ -10,7 +10,7 @@ class WatchHabits {
   const WatchHabits(this._repo);
 
   /// Watches all habits as a stream
-  Stream<Either<Failure, List<Habit>>> call() => _repo.watchAll();
+  Stream<fpdart.Either<Failure, List<Habit>>> call() => _repo.watchAll();
 }
 
 /// Use case for getting all habits once
@@ -20,7 +20,7 @@ class GetAllHabits {
   const GetAllHabits(this._repo);
 
   /// Gets all habits once
-  Future<Either<Failure, List<Habit>>> call() => _repo.getAllOnce();
+  Future<fpdart.Either<Failure, List<Habit>>> call() => _repo.getAllOnce();
 }
 
 /// Use case for getting a single habit by ID
@@ -30,7 +30,7 @@ class GetHabit {
   const GetHabit(this._repo);
 
   /// Gets a habit by ID
-  Future<Either<Failure, Habit?>> call(String habitId) => _repo.getById(habitId);
+  Future<fpdart.Either<Failure, Habit?>> call(String habitId) => _repo.getById(habitId);
 }
 
 /// Use case for getting habits due today
@@ -40,5 +40,5 @@ class GetHabitsDueToday {
   const GetHabitsDueToday(this._repo);
 
   /// Gets habits due today
-  Future<Either<Failure, List<Habit>>> call() => _repo.getDueToday();
+  Future<fpdart.Either<Failure, List<Habit>>> call() => _repo.getDueToday();
 }

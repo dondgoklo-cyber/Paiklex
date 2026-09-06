@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:logger/logger.dart';
-import '../core/utils/logger.dart';
 
 /// Global error boundary for the application
 class AppErrorBoundary {

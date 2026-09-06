@@ -1,9 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:fpdart/fpdart.dart';
+import "package:fpdart/fpdart.dart" as fpdart;
+import 'package:logger/logger.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/utils/undo_manager.dart';
-import '../../../../core/utils/logger.dart';
 import '../../domain/entities/habit.dart';
 import '../../domain/usecases/watch_habits.dart';
 import '../../domain/usecases/create_habit.dart';
@@ -31,7 +31,7 @@ class HabitListCubit extends Cubit<HabitListState> {
     this._deleteHabit,
     this._completeHabit,
   ) : _logger = Logger('HabitListCubit'),
-       super(const HabitListState());
+      super(const HabitListState());
 
   /// Starts watching habits
   void watch() {

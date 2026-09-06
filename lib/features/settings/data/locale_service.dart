@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:logger/logger.dart';
-import '../../../../core/utils/logger.dart';
 
 /// Service for managing application locale
 class LocaleService extends ChangeNotifier {
   static const _key = 'locale';
   Locale _locale = const Locale('ru');
   final Logger _logger = Logger('LocaleService');
+
+  LocaleService();
 
   /// Current locale
   Locale get locale => _locale;

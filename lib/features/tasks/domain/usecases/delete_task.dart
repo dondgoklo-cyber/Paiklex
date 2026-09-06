@@ -1,4 +1,4 @@
-import 'package:fpdart/fpdart.dart';
+import "package:fpdart/fpdart.dart" as fpdart;
 import '../../../../core/errors/failures.dart';
 import '../repositories/task_repository.dart';
 
@@ -9,5 +9,5 @@ class DeleteTask {
   const DeleteTask(this._repo);
 
   /// Deletes a task by ID
-  Future<Either<Failure, void>> call(String taskId) => _repo.delete(taskId);
+  Future<fpdart.Either<Failure, void>> call(String taskId) => _repo.delete(taskId);
 }

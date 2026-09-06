@@ -1,4 +1,4 @@
-import 'package:fpdart/fpdart.dart';
+import "package:fpdart/fpdart.dart" as fpdart;
 import '../entities/reminder.dart';
 import '../repositories/reminder_repository.dart';
 import '../../../../core/errors/failures.dart';
@@ -10,7 +10,7 @@ class ScheduleReminder {
   const ScheduleReminder(this._repo);
 
   /// Schedules a reminder (creates and sets up notification)
-  Future<Either<Failure, Reminder>> call(Reminder reminder) => _repo.schedule(reminder);
+  Future<fpdart.Either<Failure, Reminder>> call(Reminder reminder) => _repo.schedule(reminder);
 }
 
 /// Use case for canceling a reminder
@@ -20,7 +20,7 @@ class CancelReminder {
   const CancelReminder(this._repo);
 
   /// Cancels a reminder (deletes and removes notification)
-  Future<Either<Failure, void>> call(String reminderId) => _repo.cancel(reminderId);
+  Future<fpdart.Either<Failure, void>> call(String reminderId) => _repo.cancel(reminderId);
 }
 
 /// Use case for updating a reminder
@@ -30,9 +30,9 @@ class UpdateReminder {
   const UpdateReminder(this._repo);
 
   /// Updates a reminder
-  Future<Either<Failure, Reminder>> call(Reminder reminder) async {
+  Future<fpdart.Either<Failure, Reminder>> call(Reminder reminder) async {
     if (reminder.title.trim().isEmpty) {
-      return Left(ValidationFailure('Reminder title cannot be empty'));
+      return fpdart.Left(ValidationFailure('Reminder title cannot be empty'));
     }
 
     return _repo.update(reminder);
@@ -46,5 +46,5 @@ class DeleteReminder {
   const DeleteReminder(this._repo);
 
   /// Deletes a reminder by ID
-  Future<Either<Failure, void>> call(String reminderId) => _repo.delete(reminderId);
+  Future<fpdart.Either<Failure, void>> call(String reminderId) => _repo.delete(reminderId);
 }

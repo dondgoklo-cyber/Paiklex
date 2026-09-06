@@ -7,7 +7,6 @@ import 'package:logger/logger.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../../core/utils/date_utils.dart';
-import '../../../../core/utils/logger.dart';
 import '../../../../database/app_database.dart';
 
 /// Service for exporting and importing data
@@ -33,8 +32,6 @@ class SyncService {
         'habits': habits.map(_habitToJson).toList(),
         'reminders': reminders.map(_reminderToJson).toList(),
       };
-
-      if (kIsWeb) return null;
 
       if (kIsWeb) return null;
       final dir = await getApplicationDocumentsDirectory();
@@ -119,7 +116,7 @@ class SyncService {
     final incomingUpdated = j['updatedAt'] as int;
 
     if (existing == null || incomingUpdated > existing.updatedAt) {
-      await _db.taskDao.insert(TasksCompanion(
+      await _db.taskDao.insertTask(TasksCompanion(
         id: Value(id),
         projectId: Value(j['projectId'] as String?),
         parentTaskId: Value(j['parentTaskId'] as String?),
@@ -145,7 +142,7 @@ class SyncService {
     final incomingUpdated = j['updatedAt'] as int;
 
     if (existing == null || incomingUpdated > existing.updatedAt) {
-      await _db.projectDao.insert(ProjectsCompanion(
+      await _db.projectDao.insertProject(ProjectsCompanion(
         id: Value(id),
         name: Value(j['name'] as String),
         color: Value(j['color'] as int? ?? 0xFF2196F3),
@@ -158,7 +155,7 @@ class SyncService {
 
   Future<void> _importHabit(Map<String, Object?> j) async {
     final id = j['id'] as String;
-    await _db.habitDao.insert(HabitsCompanion(
+    await _db.habitDao.insertHabit(HabitsCompanion(
       id: Value(id),
       projectId: Value(j['projectId'] as String?),
       title: Value(j['title'] as String),
@@ -172,7 +169,7 @@ class SyncService {
   }
 
   Future<void> _importReminder(Map<String, Object?> j) async {
-    await _db.reminderDao.insert(RemindersCompanion(
+    await _db.reminderDao.insertReminder(RemindersCompanion(
       id: Value(j['id'] as String),
       taskId: Value(j['taskId'] as String?),
       habitId: Value(j['habitId'] as String?),

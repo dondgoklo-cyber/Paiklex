@@ -1,4 +1,3 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:uuid/uuid.dart';
 import '../core/utils/undo_manager.dart';
@@ -65,11 +64,6 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton(() => ReminderDao(db));
 
   // ==========================================================================
-  // Database access for repositories
-  // ==========================================================================
-  getIt.registerLazySingleton<AppDatabase>(() => db);
-
-  // ==========================================================================
   // Utils
   // ==========================================================================
   getIt.registerLazySingleton(() => const Uuid());
@@ -78,7 +72,7 @@ Future<void> setupDependencies() async {
   // Repositories - Tasks
   // ==========================================================================
   getIt.registerLazySingleton<TaskRepository>(
-    () => TaskRepositoryImpl(getIt<TaskDao>()),
+    () => TaskRepositoryImpl(getIt<TaskDao>(), getIt<AppDatabase>()),
   );
 
   // ==========================================================================

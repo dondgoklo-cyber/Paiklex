@@ -1,9 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:fpdart/fpdart.dart';
+import "package:fpdart/fpdart.dart" as fpdart;
+import 'package:logger/logger.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/utils/undo_manager.dart';
-import '../../../../core/utils/logger.dart';
 import '../../domain/entities/project.dart';
 import '../../domain/usecases/watch_projects.dart';
 import '../../domain/usecases/create_project.dart';
@@ -31,7 +31,7 @@ class ProjectListCubit extends Cubit<ProjectListState> {
     this._deleteProject,
     this._toggleProjectArchive,
   ) : _logger = Logger('ProjectListCubit'),
-       super(const ProjectListState());
+      super(const ProjectListState());
 
   /// Starts watching projects
   void watch() {

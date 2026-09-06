@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import '../utils/undo_manager.dart';
+import '../core/utils/undo_manager.dart';
 
 /// Shows an undo snackbar with the ability to undo the last action
 class UndoSnackBar {
@@ -21,7 +21,6 @@ class UndoSnackBar {
         duration: duration,
         action: SnackBarAction(
           label: undoLabel ?? l10n.undo,
-          icon: undoIcon != null ? Icon(undoIcon) : null,
           textColor: Theme.of(context).colorScheme.primary,
           onPressed: () {
             undoManager.undo(actionId);
@@ -53,7 +52,6 @@ class UndoSnackBar {
       actionId: actionId,
       message: message,
       undoLabel: l10n.undo,
-      undoIcon: Icons.undo,
     );
   }
 
@@ -74,12 +72,11 @@ class UndoSnackBar {
       actionId: actionId,
       message: message,
       undoLabel: l10n.undo,
-      undoIcon: Icons.undo,
     );
   }
 
   /// Show complete undo snackbar
-  static ScaffoldFeatureController<SnackBar, SnackBarClosedReason> showComplete({
+  static ScaffoldFeatureController<SnackBar, SnackBarClosedRange> showComplete({
     required BuildContext context,
     required String actionId,
     String? itemName,
@@ -94,7 +91,6 @@ class UndoSnackBar {
       actionId: actionId,
       message: message,
       undoLabel: l10n.undo,
-      undoIcon: Icons.undo,
     );
   }
 }

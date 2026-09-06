@@ -28,8 +28,8 @@ class Projects extends Table {
 @DataClassName('TaskRow')
 class Tasks extends Table {
   TextColumn get id => text()();
-  TextColumn get projectId => text().nullable()();
-  TextColumn get parentTaskId => text().nullable()();
+  TextColumn get projectId => text().nullable().references(Projects, #id, onDelete: KeyAction.setNull)();
+  TextColumn get parentTaskId => text().nullable().references(Tasks, #id, onDelete: KeyAction.setNull)();
   TextColumn get content => text().withLength(min: 1, max: 2000)();
   TextColumn get description => text().nullable()();
   BoolColumn get isCompleted => boolean().withDefault(const Constant(false))();
@@ -50,7 +50,7 @@ class Tasks extends Table {
 @DataClassName('HabitRow')
 class Habits extends Table {
   TextColumn get id => text()();
-  TextColumn get projectId => text().nullable()();
+  TextColumn get projectId => text().nullable().references(Projects, #id, onDelete: KeyAction.setNull)();
   TextColumn get title => text().withLength(min: 1, max: 200)();
   TextColumn get frequency => text()();
   IntColumn get streak => integer().withDefault(const Constant(0))();
@@ -66,8 +66,8 @@ class Habits extends Table {
 @DataClassName('ReminderRow')
 class Reminders extends Table {
   TextColumn get id => text()();
-  TextColumn get taskId => text().nullable()();
-  TextColumn get habitId => text().nullable()();
+  TextColumn get taskId => text().nullable().references(Tasks, #id, onDelete: KeyAction.cascade)();
+  TextColumn get habitId => text().nullable().references(Habits, #id, onDelete: KeyAction.cascade)();
   IntColumn get triggerAt => integer()();
   TextColumn get title => text()();
   TextColumn get body => text().nullable() as TextColumn;
@@ -97,6 +97,12 @@ class AppDatabase extends _$AppDatabase {
       await customStatement('PRAGMA journal_mode = WAL');
     },
   );
+
+  // DAO getters for dependency injection
+  TaskDao get taskDao => TaskDao(this);
+  ProjectDao get projectDao => ProjectDao(this);
+  HabitDao get habitDao => HabitDao(this);
+  ReminderDao get reminderDao => ReminderDao(this);
 }
 
 LazyDatabase _openConnection() {
@@ -152,11 +158,11 @@ class TaskDao extends DatabaseAccessor<AppDatabase> with _$TaskDaoMixin {
     return (select(tasks)..where((t) => t.id.equals(id))).getSingleOrNull();
   }
 
-  Future<int> insert(TasksCompanion row) => into(tasks).insert(row);
+  Future<int> insertTask(TasksCompanion row) => into(tasks).insert(row);
 
-  Future<int> update(TasksCompanion companion) => update(tasks).write(companion);
+  Future<int> updateTask(TasksCompanion companion) => (update(tasks)..where((t) => t.id.equals(companion.id.value))).write(companion);
 
-  Future<int> delete(String id) {
+  Future<int> deleteTask(String id) {
     return (delete(tasks)..where((t) => t.id.equals(id))).go();
   }
 
@@ -167,8 +173,8 @@ class TaskDao extends DatabaseAccessor<AppDatabase> with _$TaskDaoMixin {
     final wasCompleted = current.isCompleted;
     return (update(tasks)..where((t) => t.id.equals(current.id))).write(current.copyWith(
         isCompleted: !wasCompleted,
-        completedAt: !wasCompleted ? now : null,
-        updatedAt: now,
+        completedAt: !wasCompleted ? Value(now) : const Value.absent(),
+        updatedAt: Value(now),
       ),
     );
   }
@@ -187,9 +193,9 @@ class ProjectDao extends DatabaseAccessor<AppDatabase> with _$ProjectDaoMixin {
     return (select(projects)..where((p) => p.id.equals(id))).getSingleOrNull();
   }
 
-  Future<int> insert(ProjectsCompanion row) => into(projects).insert(row);
-  Future<int> update(ProjectsCompanion companion) => update(projects).write(companion);
-  Future<int> delete(String id) => (delete(projects)..where((p) => p.id.equals(id))).go();
+  Future<int> insertProject(ProjectsCompanion row) => into(projects).insert(row);
+  Future<int> updateProject(ProjectsCompanion companion) => (update(projects)..where((p) => p.id.equals(companion.id.value))).write(companion);
+  Future<int> deleteProject(String id) => (delete(projects)..where((p) => p.id.equals(id))).go();
 }
 
 @DriftAccessor(tables: [Habits])
@@ -203,9 +209,9 @@ class HabitDao extends DatabaseAccessor<AppDatabase> with _$HabitDaoMixin {
     return (select(habits)..where((h) => h.id.equals(id))).getSingleOrNull();
   }
 
-  Future<int> insert(HabitsCompanion row) => into(habits).insert(row);
-  Future<int> update(HabitsCompanion companion) => update(habits).write(companion);
-  Future<int> delete(String id) => (delete(habits)..where((h) => h.id.equals(id))).go();
+  Future<int> insertHabit(HabitsCompanion row) => into(habits).insert(row);
+  Future<int> updateHabit(HabitsCompanion companion) => (update(habits)..where((h) => h.id.equals(companion.id.value))).write(companion);
+  Future<int> deleteHabit(String id) => (delete(habits)..where((h) => h.id.equals(id))).go();
 }
 
 @DriftAccessor(tables: [Reminders])
@@ -215,7 +221,21 @@ class ReminderDao extends DatabaseAccessor<AppDatabase> with _$ReminderDaoMixin 
   Stream<List<ReminderRow>> watchAll() => select(reminders).watch();
   Future<List<ReminderRow>> getAllOnce() => select(reminders).get();
 
-  Future<int> insert(RemindersCompanion row) => into(reminders).insert(row);
-  Future<int> update(RemindersCompanion companion) => update(reminders).write(companion);
-  Future<int> delete(String id) => (delete(reminders)..where((r) => r.id.equals(id))).go();
+  Future<ReminderRow?> getById(String id) {
+    return (select(reminders)..where((r) => r.id.equals(id))).getSingleOrNull();
+  }
+
+  Future<List<ReminderRow>> getByTask(String taskId) {
+    return (select(reminders)..where((r) => r.taskId.equals(taskId))).get();
+  }
+
+  Future<List<ReminderRow>> getByHabit(String habitId) {
+    return (select(reminders)..where((r) => r.habitId.equals(habitId))).get();
+  }
+
+  Future<int> insertReminder(RemindersCompanion row) => into(reminders).insert(row);
+  Future<int> updateReminder(RemindersCompanion companion) => (update(reminders)..where((r) => r.id.equals(companion.id.value))).write(companion);
+  Future<int> deleteReminder(String id) => (delete(reminders)..where((r) => r.id.equals(id))).go();
+  Future<int> deleteRemindersByTask(String taskId) => (delete(reminders)..where((r) => r.taskId.equals(taskId))).go();
+  Future<int> deleteRemindersByHabit(String habitId) => (delete(reminders)..where((r) => r.habitId.equals(habitId))).go();
 }

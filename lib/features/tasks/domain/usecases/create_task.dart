@@ -1,4 +1,4 @@
-import 'package:fpdart/fpdart.dart';
+import "package:fpdart/fpdart.dart" as fpdart;
 import 'package:uuid/uuid.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/utils/date_utils.dart';
@@ -13,9 +13,9 @@ class CreateTask {
   const CreateTask(this._repo, this._uuid);
 
   /// Creates a new task with generated UUID if not provided
-  Future<Either<Failure, Task>> call(Task task) async {
+  Future<fpdart.Either<Failure, Task>> call(Task task) async {
     if (task.content.trim().isEmpty) {
-      return const Left(ValidationFailure('Content cannot be empty'));
+      return const fpdart.Left(ValidationFailure('Content cannot be empty'));
     }
 
     // Generate UUID if not set

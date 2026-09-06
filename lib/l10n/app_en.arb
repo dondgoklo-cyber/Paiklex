@@ -113,6 +113,7 @@
   "dueToday": "Due Today",
   "currentStreak": "Current Streak",
   "bestStreak": "Best Streak",
+  "create": "Create",
   "complete": "Complete",
   "completeHabit": "Complete",
   "deleteHabitConfirmation": "Are you sure you want to delete this habit?",
@@ -134,5 +135,6 @@
   "undoCompleteItem": "{item} completed",
   "pullToRefresh": "Pull to refresh",
   "refreshing": "Refreshing...",
-  "releaseToRefresh": "Release to refresh"
+  "releaseToRefresh": "Release to refresh",
+  "noDueDate": "No due date",
 }

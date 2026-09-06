@@ -2,7 +2,6 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:logger/logger.dart';
-import '../../../../core/utils/logger.dart';
 
 /// Service for managing local notifications
 class NotificationService {
@@ -10,6 +9,8 @@ class NotificationService {
       FlutterLocalNotificationsPlugin();
   final Logger _logger = Logger('NotificationService');
   bool _initialized = false;
+
+  NotificationService();
 
   /// Initializes the notification service (idempotent)
   Future<void> init() async {
@@ -36,42 +37,35 @@ class NotificationService {
     }
   }
 
-  /// Schedules a notification
-  Future<void> schedule({
-    required String id,
+  /// Schedules a notification using NotificationDetails
+  Future<void> scheduleNotification({
+    required int id,
     required String title,
     required String body,
-    required DateTime triggerAtUtc,
+    required DateTime scheduledTime,
+    required NotificationDetails notificationDetails,
   }) async {
     try {
       await _plugin.zonedSchedule(
-        id.hashCode,
+        id,
         title,
         body,
-        tz.TZDateTime.from(triggerAtUtc.toUtc(), tz.local),
-        const NotificationDetails(
-          android: AndroidNotificationDetails(
-            'monolith',
-            'Monolith',
-            importance: Importance.high,
-            priority: Priority.high,
-          ),
-          iOS: DarwinNotificationDetails(),
-        ),
+        tz.TZDateTime.from(scheduledTime.toLocal(), tz.local),
+        notificationDetails,
         androidAllowWhileIdle: true,
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
       );
-      _logger.i('Notification scheduled for $id at $triggerAtUtc');
+      _logger.i('Notification scheduled for $id at $scheduledTime');
     } catch (e, s) {
       _logger.e('Failed to schedule notification', error: e, stackTrace: s);
     }
   }
 
-  /// Cancels a specific notification
-  Future<void> cancel(String id) async {
+  /// Cancels a specific notification by ID
+  Future<void> cancelNotification(int id) async {
     try {
-      await _plugin.cancel(id.hashCode);
+      await _plugin.cancel(id);
       _logger.i('Notification cancelled: $id');
     } catch (e, s) {
       _logger.e('Failed to cancel notification', error: e, stackTrace: s);

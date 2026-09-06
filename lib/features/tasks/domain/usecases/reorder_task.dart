@@ -1,4 +1,4 @@
-import 'package:fpdart/fpdart.dart';
+import "package:fpdart/fpdart.dart" as fpdart;
 import '../../../../core/errors/failures.dart';
 import '../repositories/task_repository.dart';
 
@@ -9,6 +9,6 @@ class ReorderTask {
   const ReorderTask(this._repo);
 
   /// Reorders a task to a new index
-  Future<Either<Failure, void>> call(String taskId, int newIndex) =>
+  Future<fpdart.Either<Failure, void>> call(String taskId, int newIndex) =>
       _repo.reorder(taskId, newIndex);
 }

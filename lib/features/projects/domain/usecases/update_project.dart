@@ -1,4 +1,4 @@
-import 'package:fpdart/fpdart.dart';
+import "package:fpdart/fpdart.dart" as fpdart;
 import '../entities/project.dart';
 import '../repositories/project_repository.dart';
 import '../../../../core/errors/failures.dart';
@@ -10,9 +10,9 @@ class UpdateProject {
   const UpdateProject(this._repo);
 
   /// Updates a project
-  Future<Either<Failure, Project>> call(Project project) async {
+  Future<fpdart.Either<Failure, Project>> call(Project project) async {
     if (project.name.trim().isEmpty) {
-      return Left(ValidationFailure('Project name cannot be empty'));
+      return fpdart.Left(ValidationFailure('Project name cannot be empty'));
     }
 
     return _repo.update(project);
@@ -26,7 +26,7 @@ class DeleteProject {
   const DeleteProject(this._repo);
 
   /// Deletes a project by ID
-  Future<Either<Failure, void>> call(String projectId) => _repo.delete(projectId);
+  Future<fpdart.Either<Failure, void>> call(String projectId) => _repo.delete(projectId);
 }
 
 /// Use case for toggling project archive status
@@ -36,5 +36,5 @@ class ToggleProjectArchive {
   const ToggleProjectArchive(this._repo);
 
   /// Archives or unarchives a project
-  Future<Either<Failure, Project>> call(String projectId) => _repo.toggleArchive(projectId);
+  Future<fpdart.Either<Failure, Project>> call(String projectId) => _repo.toggleArchive(projectId);
 }

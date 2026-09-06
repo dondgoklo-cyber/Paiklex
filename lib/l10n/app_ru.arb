@@ -113,6 +113,7 @@
   "dueToday": "На сегодня",
   "currentStreak": "Текущая серия",
   "bestStreak": "Лучшая серия",
+  "create": "Создать",
   "complete": "Выполнено",
   "completeHabit": "Выполнить",
   "deleteHabitConfirmation": "Вы уверены, что хотите удалить эту привычку?",
@@ -134,5 +135,6 @@
   "undoCompleteItem": "{item} выполнена",
   "pullToRefresh": "Потяните для обновления",
   "refreshing": "Обновление...",
-  "releaseToRefresh": "Отпустите для обновления"
+  "releaseToRefresh": "Отпустите для обновления",
+  "noDueDate": "Срок отсутствует",
 }

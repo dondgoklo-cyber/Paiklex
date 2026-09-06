@@ -1,4 +1,4 @@
-import 'package:fpdart/fpdart.dart';
+import "package:fpdart/fpdart.dart" as fpdart;
 import '../../../../core/errors/failures.dart';
 import '../entities/task.dart';
 import '../repositories/task_repository.dart';
@@ -10,7 +10,7 @@ class WatchAllTasks {
   const WatchAllTasks(this._repo);
 
   /// Returns a stream of all tasks
-  Stream<Either<Failure, List<Task>>> call() => _repo.watchAll();
+  Stream<fpdart.Either<Failure, List<Task>>> call() => _repo.watchAll();
 }
 
 /// Use case for watching tasks by project
@@ -21,6 +21,6 @@ class WatchTasksByProject {
 
   /// Returns a stream of tasks filtered by project ID
   /// Pass null for inbox (tasks without project)
-  Stream<Either<Failure, List<Task>>> call(String? projectId) =>
+  Stream<fpdart.Either<Failure, List<Task>>> call(String? projectId) =>
       _repo.watchByProject(projectId);
 }
