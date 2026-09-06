@@ -11,7 +11,6 @@ class UndoSnackBar {
     required String message,
     Duration duration = const Duration(seconds: 5),
     String? undoLabel,
-    IconData? undoIcon,
   }) {
     final l10n = AppLocalizations.of(context)!;
     
@@ -76,7 +75,7 @@ class UndoSnackBar {
   }
 
   /// Show complete undo snackbar
-  static ScaffoldFeatureController<SnackBar, SnackBarClosedRange> showComplete({
+  static ScaffoldFeatureController<SnackBar, SnackBarClosedReason> showComplete({
     required BuildContext context,
     required String actionId,
     String? itemName,

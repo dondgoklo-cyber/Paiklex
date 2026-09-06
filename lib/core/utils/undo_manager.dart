@@ -50,14 +50,23 @@ class UndoAction {
 /// Callback type for undo operations
 typedef UndoCallback = Future<void> Function();
 
-/// Action with undo callback
+/// Action with undo callback and full state restoration
 class UndoableAction {
   final UndoAction action;
   final UndoCallback onUndo;
+  final Map<String, dynamic>? fullState; // Full state for exact restoration
 
   const UndoableAction({
     required this.action,
     required this.onUndo,
+    this.fullState,
+  });
+
+  /// Creates an undoable action with full state capture
+  UndoableAction.withState({
+    required this.action,
+    required this.onUndo,
+    required this.fullState,
   });
 }
 
@@ -93,6 +102,7 @@ class UndoManager {
     required Object? entity,
     required UndoCallback onUndo,
     Duration timeout = const Duration(seconds: 5),
+    Map<String, dynamic>? fullState,
   }) {
     final action = UndoAction(
       id: _generateId(),
@@ -102,7 +112,11 @@ class UndoManager {
       timeout: timeout,
     );
 
-    _actions.add(UndoableAction(action: action, onUndo: onUndo));
+    _actions.add(UndoableAction(
+      action: action,
+      onUndo: onUndo,
+      fullState: fullState,
+    ));
     _logger.d('Added undo action: ${action.type} for ${action.id}');
 
     // Trim history if too large
@@ -111,6 +125,23 @@ class UndoManager {
     }
 
     return action.id;
+  }
+
+  /// Add an action with full state capture for exact restoration
+  String addActionWithState({
+    required UndoActionType type,
+    required Object? entity,
+    required UndoCallback onUndo,
+    required Map<String, dynamic> fullState,
+    Duration timeout = const Duration(seconds: 5),
+  }) {
+    return addAction(
+      type: type,
+      entity: entity,
+      onUndo: onUndo,
+      timeout: timeout,
+      fullState: fullState,
+    );
   }
 
   /// Perform undo for a specific action
