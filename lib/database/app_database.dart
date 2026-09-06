@@ -34,14 +34,14 @@ class Tasks extends Table {
   TextColumn get description => text().nullable()();
   BoolColumn get isCompleted => boolean().withDefault(const Constant(false))();
   IntColumn get priority => integer().withDefault(const Constant(3))();
-  IntColumn get dueDate => integer().nullable();
-  IntColumn get duration => integer().nullable();
+  IntColumn get dueDate => integer().nullable() as IntColumn;
+  IntColumn get duration => integer().nullable() as IntColumn;
   TextColumn get tags => text().withDefault(const Constant('[]'))();
-  TextColumn get recurrence => text().nullable();
+  TextColumn get recurrence => text().nullable() as TextColumn;
   IntColumn get orderIndex => integer().withDefault(const Constant(0))();
   IntColumn get createdAt => integer()();
   IntColumn get updatedAt => integer()();
-  IntColumn get completedAt => integer().nullable();
+  IntColumn get completedAt => integer().nullable() as IntColumn;
 
   @override
   Set<Column> get primaryKey => {id};
@@ -55,7 +55,7 @@ class Habits extends Table {
   TextColumn get frequency => text()();
   IntColumn get streak => integer().withDefault(const Constant(0))();
   IntColumn get bestStreak => integer().withDefault(const Constant(0))();
-  IntColumn get lastCompletedAt => integer().nullable();
+  IntColumn get lastCompletedAt => integer().nullable() as IntColumn;
   IntColumn get createdAt => integer()();
   IntColumn get updatedAt => integer()();
 
@@ -70,7 +70,7 @@ class Reminders extends Table {
   TextColumn get habitId => text().nullable()();
   IntColumn get triggerAt => integer()();
   TextColumn get title => text()();
-  TextColumn get body => text().nullable();
+  TextColumn get body => text().nullable() as TextColumn;
   BoolColumn get isTriggered => boolean().withDefault(const Constant(false))();
   IntColumn get createdAt => integer()();
 
@@ -110,7 +110,7 @@ LazyDatabase _openConnection() {
       if (result.missingFeatures.isNotEmpty) {
         throw StateError('WASM missing: ${result.missingFeatures}');
       }
-      return result.database;
+      return result;
     }
     final dbFolder = await getApplicationDocumentsDirectory();
     final file = File(p.join(dbFolder.path, 'monolith.sqlite'));
@@ -152,15 +152,12 @@ class TaskDao extends DatabaseAccessor<AppDatabase> with _$TaskDaoMixin {
     return (select(tasks)..where((t) => t.id.equals(id))).getSingleOrNull();
   }
 
-  Future<String> insert(TasksCompanion row) => into(tasks).insert(row);
+  Future<int> insert(TasksCompanion row) => into(tasks).insert(row);
 
-  Future<bool> update(TasksCompanion row) => update(tasks).replace(row);
+  Future<int> update(TasksCompanion row, {String? where}) => (update(tasks)..where((t) => t.id.equals(where))).go();
 
   Future<int> delete(String id) {
-    return transaction(() async {
-      await (delete(tasks)..where((t) => t.parentTaskId.equals(id))).go();
-      return (delete(tasks)..where((t) => t.id.equals(id))).go();
-    });
+    return (delete(tasks)..where((t) => t.id.equals(id))).go();
   }
 
   Future<bool> toggleComplete(String id) async {
@@ -168,11 +165,13 @@ class TaskDao extends DatabaseAccessor<AppDatabase> with _$TaskDaoMixin {
     if (current == null) return false;
     final now = DateTime.now().toUtc().millisecondsSinceEpoch;
     final wasCompleted = current.isCompleted;
-    return update(tasks).replace(current.copyWith(
-          isCompleted: !wasCompleted,
-          completedAt: !wasCompleted ? now : null,
-          updatedAt: now,
-        ));
+    return (update(tasks)..where((t) => t.id.equals(current.id))).write(
+      current.copyWith(
+        isCompleted: !wasCompleted,
+        completedAt: !wasCompleted ? now : null,
+        updatedAt: now,
+      ),
+    );
   }
 }
 
@@ -189,10 +188,11 @@ class ProjectDao extends DatabaseAccessor<AppDatabase> with _$ProjectDaoMixin {
     return (select(projects)..where((p) => p.id.equals(id))).getSingleOrNull();
   }
 
-  Future<String> insert(ProjectsCompanion row) => into(projects).insert(row);
-  Future<bool> update(ProjectsCompanion row) => update(projects).replace(row);
-  Future<int> delete(String id) =>
-      (delete(projects)..where((p) => p.id.equals(id))).go();
+  Future<int> insert(ProjectsCompanion row) => into(projects).insert(row);
+  Future<int> update(ProjectsCompanion row, {String? where}) => (update(projects)..where((p) => p.id.equals(where))).go();
+  Future<int> delete(String id) {
+    return (delete(projects)..where((p) => p.id.equals(id))).go();
+  }
 }
 
 @DriftAccessor(tables: [Habits])
@@ -206,8 +206,8 @@ class HabitDao extends DatabaseAccessor<AppDatabase> with _$HabitDaoMixin {
     return (select(habits)..where((h) => h.id.equals(id))).getSingleOrNull();
   }
 
-  Future<String> insert(HabitsCompanion row) => into(habits).insert(row);
-  Future<bool> update(HabitsCompanion row) => update(habits).replace(row);
+  Future<int> insert(HabitsCompanion row) => into(habits).insert(row);
+  Future<int> update(HabitsCompanion row, {String? where}) => (update(habits)..where((h) => h.id.equals(where))).go();
   Future<int> delete(String id) =>
       (delete(habits)..where((h) => h.id.equals(id))).go();
 }
@@ -219,8 +219,8 @@ class ReminderDao extends DatabaseAccessor<AppDatabase> with _$ReminderDaoMixin 
   Stream<List<ReminderRow>> watchAll() => select(reminders).watch();
   Future<List<ReminderRow>> getAllOnce() => select(reminders).get();
 
-  Future<String> insert(RemindersCompanion row) => into(reminders).insert(row);
-  Future<bool> update(RemindersCompanion row) => update(reminders).replace(row);
+  Future<int> insert(RemindersCompanion row) => into(reminders).insert(row);
+  Future<int> update(RemindersCompanion row, {String? where}) => (update(reminders)..where((r) => r.id.equals(where))).go();
   Future<int> delete(String id) =>
       (delete(reminders)..where((r) => r.id.equals(id))).go();
 }
