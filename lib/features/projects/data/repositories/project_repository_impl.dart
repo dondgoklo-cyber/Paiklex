@@ -1,5 +1,6 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:drift/drift.dart';
+import 'package:logger/logger.dart';
 import '../../../../core/utils/logger.dart';
 import '../../../../core/errors/failures.dart';
 import '../../domain/entities/project.dart';
@@ -12,7 +13,13 @@ class ProjectRepositoryImpl implements ProjectRepository {
   final AppDatabase _db;
   final Logger _logger;
 
-  ProjectRepositoryImpl(this._db) : _logger = AppLogger.forService('ProjectRepositoryImpl');
+  ProjectRepositoryImpl(this._db) : _logger = Logger(
+      printer: PrettyPrinter(
+        colors: true,
+        printTime: true,
+        methodCount: 0,
+      ),
+    );
 
   @override
   Stream<Either<Failure, List<Project>>> watchAll() {
@@ -20,11 +27,11 @@ class ProjectRepositoryImpl implements ProjectRepository {
       try {
         return Right(rows.map((row) => row.toEntity()).toList());
       } catch (e, s) {
-        _logger.e('Failed to map project rows', error: e, stackTrace: s);
+        Logger().e('Failed to map project rows', error: e, stackTrace: s);
         return Left(DatabaseFailure(e.toString()));
       }
     }).handleError((e, s) {
-      _logger.e('Failed to watch projects', error: e, stackTrace: s);
+      Logger().e('Failed to watch projects', error: e, stackTrace: s);
       return Left(DatabaseFailure(e.toString()));
     });
   }
@@ -35,7 +42,7 @@ class ProjectRepositoryImpl implements ProjectRepository {
       final rows = await _db.projectDao.getAllOnce();
       return Right(rows.map((row) => row.toEntity()).toList());
     } catch (e, s) {
-      _logger.e('Failed to get all projects', error: e, stackTrace: s);
+      Logger().e('Failed to get all projects', error: e, stackTrace: s);
       return Left(DatabaseFailure(e.toString()));
     }
   }
@@ -46,7 +53,7 @@ class ProjectRepositoryImpl implements ProjectRepository {
       final row = await _db.projectDao.getById(projectId);
       return Right(row?.toEntity());
     } catch (e, s) {
-      _logger.e('Failed to get project by ID', error: e, stackTrace: s);
+      Logger().e('Failed to get project by ID', error: e, stackTrace: s);
       return Left(DatabaseFailure(e.toString()));
     }
   }
@@ -62,7 +69,7 @@ class ProjectRepositoryImpl implements ProjectRepository {
       await _db.projectDao.insert(updatedProject.toCompanion());
       return Right(updatedProject);
     } catch (e, s) {
-      _logger.e('Failed to create project', error: e, stackTrace: s);
+      Logger().e('Failed to create project', error: e, stackTrace: s);
       return Left(DatabaseFailure(e.toString()));
     }
   }
@@ -76,7 +83,7 @@ class ProjectRepositoryImpl implements ProjectRepository {
       await _db.projectDao.update(updatedProject.toCompanion());
       return Right(updatedProject);
     } catch (e, s) {
-      _logger.e('Failed to update project', error: e, stackTrace: s);
+      Logger().e('Failed to update project', error: e, stackTrace: s);
       return Left(DatabaseFailure(e.toString()));
     }
   }
@@ -87,7 +94,7 @@ class ProjectRepositoryImpl implements ProjectRepository {
       await _db.projectDao.delete(projectId);
       return const Right(null);
     } catch (e, s) {
-      _logger.e('Failed to delete project', error: e, stackTrace: s);
+      Logger().e('Failed to delete project', error: e, stackTrace: s);
       return Left(DatabaseFailure(e.toString()));
     }
   }
@@ -105,7 +112,7 @@ class ProjectRepositoryImpl implements ProjectRepository {
       await _db.projectDao.update(updatedProject.toCompanion());
       return Right(updatedProject);
     } catch (e, s) {
-      _logger.e('Failed to toggle project archive', error: e, stackTrace: s);
+      Logger().e('Failed to toggle project archive', error: e, stackTrace: s);
       return Left(DatabaseFailure(e.toString()));
     }
   }

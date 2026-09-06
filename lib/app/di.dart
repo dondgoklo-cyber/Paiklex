@@ -85,24 +85,21 @@ Future<void> setupDependencies() async {
   // Repositories - Projects
   // ==========================================================================
   getIt.registerLazySingleton<ProjectRepository>(
-    () => ProjectRepositoryImpl(getIt<ProjectDao>()),
+    () => ProjectRepositoryImpl(getIt<AppDatabase>()),
   );
 
   // ==========================================================================
   // Repositories - Habits
   // ==========================================================================
   getIt.registerLazySingleton<HabitRepository>(
-    () => HabitRepositoryImpl(getIt<HabitDao>()),
+    () => HabitRepositoryImpl(getIt<AppDatabase>()),
   );
 
   // ==========================================================================
   // Repositories - Reminders
   // ==========================================================================
   getIt.registerLazySingleton<ReminderRepository>(
-    () => ReminderRepositoryImpl(
-      getIt<ReminderDao>(),
-      getIt<NotificationService>(),
-    ),
+    () => ReminderRepositoryImpl(getIt<AppDatabase>(), getIt<NotificationService>()),
   );
 
   // ==========================================================================

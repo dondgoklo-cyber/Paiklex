@@ -33,7 +33,7 @@ class ReminderListCubit extends Cubit<ReminderListState> {
     this._deleteReminder,
     this._scheduleReminder,
     this._cancelReminder,
-  ) : _logger = AppLogger.forService('ReminderListCubit'),
+  ) : _logger = Logger('ReminderListCubit'),
        super(const ReminderListState());
 
   /// Starts watching reminders

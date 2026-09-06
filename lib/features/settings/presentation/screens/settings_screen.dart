@@ -14,7 +14,7 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final logger = AppLogger.forService('SettingsScreen');
+    final logger = Logger('SettingsScreen');
     final themeService = getIt<ThemeService>();
     final localeService = getIt<LocaleService>();
     final syncService = getIt<SyncService>();

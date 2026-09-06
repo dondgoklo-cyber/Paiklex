@@ -7,7 +7,7 @@ import '../../../../core/utils/logger.dart';
 class LocaleService extends ChangeNotifier {
   static const _key = 'locale';
   Locale _locale = const Locale('ru');
-  final Logger _logger = AppLogger.forService('LocaleService');
+  final Logger _logger = Logger('LocaleService');
 
   /// Current locale
   Locale get locale => _locale;

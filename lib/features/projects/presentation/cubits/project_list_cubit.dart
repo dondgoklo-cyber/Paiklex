@@ -30,7 +30,7 @@ class ProjectListCubit extends Cubit<ProjectListState> {
     this._updateProject,
     this._deleteProject,
     this._toggleProjectArchive,
-  ) : _logger = AppLogger.forService('ProjectListCubit'),
+  ) : _logger = Logger('ProjectListCubit'),
        super(const ProjectListState());
 
   /// Starts watching projects

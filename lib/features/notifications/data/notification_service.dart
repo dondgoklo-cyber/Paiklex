@@ -8,7 +8,7 @@ import '../../../../core/utils/logger.dart';
 class NotificationService {
   final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
-  final Logger _logger = AppLogger.forService('NotificationService');
+  final Logger _logger = Logger('NotificationService');
   bool _initialized = false;
 
   /// Initializes the notification service (idempotent)

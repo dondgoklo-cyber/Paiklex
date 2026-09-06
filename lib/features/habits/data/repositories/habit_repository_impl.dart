@@ -13,7 +13,7 @@ class HabitRepositoryImpl implements HabitRepository {
   final AppDatabase _db;
   final Logger _logger;
 
-  HabitRepositoryImpl(this._db) : _logger = AppLogger.forService('HabitRepositoryImpl');
+  HabitRepositoryImpl(this._db) : _logger = Logger('HabitRepositoryImpl');
 
   @override
   Stream<Either<Failure, List<Habit>>> watchAll() {

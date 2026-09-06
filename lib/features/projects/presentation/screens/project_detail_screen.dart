@@ -27,7 +27,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   final _nameController = TextEditingController();
   int _color = 0xFF2196F3;
   bool _isLoading = false;
-  final _logger = AppLogger.forService('ProjectDetailScreen');
+  final _logger = Logger('ProjectDetailScreen');
 
   late final GetProject _getProject;
   late final UpdateProject _updateProject;

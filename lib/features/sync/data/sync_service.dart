@@ -13,7 +13,7 @@ import '../../../../database/app_database.dart';
 /// Service for exporting and importing data
 class SyncService {
   final AppDatabase _db;
-  final Logger _logger = AppLogger.forService('SyncService');
+  final Logger _logger = Logger('SyncService');
 
   SyncService(this._db);
 

@@ -12,7 +12,7 @@ import '../models/task_model.dart';
 /// Implementation of TaskRepository using Drift database
 class TaskRepositoryImpl implements TaskRepository {
   final TaskDao _dao;
-  final Logger _logger = AppLogger.forService('TaskRepository');
+  final Logger _logger = Logger('TaskRepository');
 
   TaskRepositoryImpl(this._dao);
 

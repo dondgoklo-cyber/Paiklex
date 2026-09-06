@@ -15,7 +15,7 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
-  final logger = AppLogger.forService('OnboardingScreen');
+  final logger = Logger('OnboardingScreen');
 
   @override
   void initState() {

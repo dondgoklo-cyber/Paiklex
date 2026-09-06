@@ -30,7 +30,7 @@ class HabitListCubit extends Cubit<HabitListState> {
     this._updateHabit,
     this._deleteHabit,
     this._completeHabit,
-  ) : _logger = AppLogger.forService('HabitListCubit'),
+  ) : _logger = Logger('HabitListCubit'),
        super(const HabitListState());
 
   /// Starts watching habits

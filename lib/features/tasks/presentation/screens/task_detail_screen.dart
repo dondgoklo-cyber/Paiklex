@@ -33,7 +33,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   final _subtasksController = TextEditingController();
   List<Task> _subtasks = [];
   bool _isLoading = false;
-  final _logger = AppLogger.forService('TaskDetailScreen');
+  final _logger = Logger('TaskDetailScreen');
 
   late final CreateTask _createTask;
   late final UpdateTask _updateTask;

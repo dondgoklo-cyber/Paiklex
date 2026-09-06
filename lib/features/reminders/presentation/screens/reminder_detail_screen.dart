@@ -27,7 +27,7 @@ class _ReminderDetailScreenState extends State<ReminderDetailScreen> {
   final _bodyController = TextEditingController();
   DateTime? _triggerAt;
   bool _isLoading = false;
-  final _logger = AppLogger.forService('ReminderDetailScreen');
+  final _logger = Logger('ReminderDetailScreen');
 
   late final GetReminder _getReminder;
   late final UpdateReminder _updateReminder;

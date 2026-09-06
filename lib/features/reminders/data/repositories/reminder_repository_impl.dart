@@ -19,7 +19,7 @@ class ReminderRepositoryImpl implements ReminderRepository {
   final Logger _logger;
 
   ReminderRepositoryImpl(this._db, this._notificationService)
-      : _logger = AppLogger.forService('ReminderRepositoryImpl');
+      : _logger = Logger('ReminderRepositoryImpl');
 
   @override
   Stream<Either<Failure, List<Reminder>>> watchAll() {

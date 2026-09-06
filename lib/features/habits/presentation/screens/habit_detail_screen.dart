@@ -26,7 +26,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
   final _titleController = TextEditingController();
   String _frequency = 'daily';
   bool _isLoading = false;
-  final _logger = AppLogger.forService('HabitDetailScreen');
+  final _logger = Logger('HabitDetailScreen');
 
   late final GetHabit _getHabit;
   late final UpdateHabit _updateHabit;

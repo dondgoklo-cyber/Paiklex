@@ -5,7 +5,7 @@ import '../core/utils/logger.dart';
 
 /// Global error boundary for the application
 class AppErrorBoundary {
-  static final Logger _logger = AppLogger.instance;
+  static final Logger _logger = Logger();
 
   /// Sets up global error handlers
   static void setup() {

@@ -7,7 +7,7 @@ import '../../../../core/utils/logger.dart';
 class ThemeService extends ChangeNotifier {
   static const _key = 'theme_mode';
   ThemeMode _mode = ThemeMode.system;
-  final Logger _logger = AppLogger.forService('ThemeService');
+  final Logger _logger = Logger('ThemeService');
 
   /// Current theme mode
   ThemeMode get themeMode => _mode;
