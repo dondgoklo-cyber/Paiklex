@@ -68,14 +68,13 @@ class UndoManager {
 
   factory UndoManager() => _instance;
 
-  UndoManager._internal() {
-    _logger = Logger(
+  UndoManager._internal() : _logger = Logger(
       printer: PrettyPrinter(
         colors: true,
         printTime: true,
         methodCount: 0,
       ),
-    );
+    ) {
     _cleanupTimer = Timer.periodic(_cleanupInterval, (_) => _cleanupExpired());
   }
 
