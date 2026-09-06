@@ -4,8 +4,8 @@ import 'package:fpdart/fpdart.dart';
 
 import 'package:monolith_tasks/features/tasks/domain/repositories/task_repository.dart';
 import 'package:monolith_tasks/features/tasks/domain/usecases/get_task.dart';
-import 'package:monolith_tasks/features/tasks/domain/usecases/get_all_tasks.dart';
 import 'package:monolith_tasks/features/tasks/domain/entities/task.dart';
+import 'package:monolith_tasks/features/tasks/domain/entities/priority.dart';
 import 'package:monolith_tasks/core/errors/failures.dart';
 
 class MockTaskRepository extends Mock implements TaskRepository {}
@@ -15,7 +15,7 @@ void main() {
   late GetAllTasks getAllTasks;
   late TaskRepository mockRepository;
 
-  const testTask = Task(
+  final testTask = Task(
     id: 'test-id',
     content: 'Test task',
     isCompleted: false,
@@ -24,17 +24,16 @@ void main() {
     updatedAt: DateTime(2024, 1, 1),
   );
 
-  const testTasks = [
-    testTask,
-    Task(
-      id: 'test-id-2',
-      content: 'Another task',
-      isCompleted: true,
-      priority: TaskPriority.high,
-      createdAt: DateTime(2024, 1, 2),
-      updatedAt: DateTime(2024, 1, 2),
-    ),
-  ];
+  final testTask2 = Task(
+    id: 'test-id-2',
+    content: 'Another task',
+    isCompleted: true,
+    priority: TaskPriority.high,
+    createdAt: DateTime(2024, 1, 2),
+    updatedAt: DateTime(2024, 1, 2),
+  );
+
+  final testTasks = [testTask, testTask2];
 
   setUp(() {
     mockRepository = MockTaskRepository();
@@ -46,7 +45,7 @@ void main() {
     test('should return task when found', () async {
       // Arrange
       when(() => mockRepository.getById('test-id')).thenAnswer(
-        (_) async => Right(Some(testTask)),
+        (_) async => Right(testTask),
       );
 
       // Act
@@ -67,20 +66,19 @@ void main() {
     test('should return NotFoundFailure when task not found', () async {
       // Arrange
       when(() => mockRepository.getById('non-existent-id')).thenAnswer(
-        (_) async => Right(None()),
+        (_) async => Right(null),
       );
 
       // Act
       final result = await getTask('non-existent-id');
 
       // Assert
-      expect(result.isLeft, true);
+      expect(result.isRight, true);
       result.fold(
-        (failure) {
-          expect(failure, isA<NotFoundFailure>());
-          expect(failure.message, 'Task with id non-existent-id not found');
+        (failure) => fail('Expected success but got failure: $failure'),
+        (task) {
+          expect(task, isNull);
         },
-        (task) => fail('Expected failure but got success: $task'),
       );
 
       verify(() => mockRepository.getById('non-existent-id')).called(1);

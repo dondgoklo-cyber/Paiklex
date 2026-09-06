@@ -10,5 +10,13 @@ class UpdateTask {
   const UpdateTask(this._repo);
 
   /// Updates an existing task
-  Future<Either<Failure, Task>> call(Task task) => _repo.update(task);
+  Future<Either<Failure, Task>> call(Task task) async {
+    if (task.id.trim().isEmpty) {
+      return const Left(ValidationFailure('Task id cannot be empty'));
+    }
+    if (task.content.trim().isEmpty) {
+      return const Left(ValidationFailure('Task content cannot be empty'));
+    }
+    return _repo.update(task);
+  }
 }

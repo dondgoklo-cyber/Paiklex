@@ -5,6 +5,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:monolith_tasks/features/tasks/domain/repositories/task_repository.dart';
 import 'package:monolith_tasks/features/tasks/domain/usecases/update_task.dart';
 import 'package:monolith_tasks/features/tasks/domain/entities/task.dart';
+import 'package:monolith_tasks/features/tasks/domain/entities/priority.dart';
 import 'package:monolith_tasks/core/errors/failures.dart';
 
 class MockTaskRepository extends Mock implements TaskRepository {}
@@ -13,7 +14,7 @@ void main() {
   late UpdateTask useCase;
   late TaskRepository mockRepository;
 
-  const originalTask = Task(
+  final originalTask = Task(
     id: 'test-id',
     content: 'Original task',
     isCompleted: false,
@@ -22,7 +23,7 @@ void main() {
     updatedAt: DateTime(2024, 1, 1),
   );
 
-  const updatedTask = Task(
+  final updatedTask = Task(
     id: 'test-id',
     content: 'Updated task',
     isCompleted: true,
@@ -86,7 +87,7 @@ void main() {
     test('should return NotFoundFailure when task not found', () async {
       // Arrange
       when(() => mockRepository.update(any())).thenAnswer(
-        (_) async => Left(NotFoundFailure('Task not found')),
+        (_) async => Left(NotFoundFailure('Task', 'test-id')),
       );
 
       // Act
@@ -97,7 +98,7 @@ void main() {
       result.fold(
         (failure) {
           expect(failure, isA<NotFoundFailure>());
-          expect(failure.message, 'Task not found');
+          expect(failure.message, 'Task with id test-id not found');
         },
         (task) => fail('Expected failure but got success: $task'),
       );

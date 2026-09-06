@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 import 'package:monolith_tasks/features/tasks/domain/repositories/task_repository.dart';
 import 'package:monolith_tasks/features/tasks/domain/usecases/create_task.dart';
 import 'package:monolith_tasks/features/tasks/domain/entities/task.dart';
+import 'package:monolith_tasks/features/tasks/domain/entities/priority.dart';
 import 'package:monolith_tasks/core/errors/failures.dart';
 
 class MockTaskRepository extends Mock implements TaskRepository {}
@@ -17,7 +18,7 @@ void main() {
   late TaskRepository mockRepository;
   late Uuid mockUuid;
 
-  const testTask = Task(
+  final testTask = Task(
     id: 'test-id',
     content: 'Test task',
     isCompleted: false,
@@ -41,7 +42,14 @@ void main() {
       );
 
       // Act
-      final result = await useCase('Test task');
+      final taskToCreate = Task(
+        id: '',
+        content: 'Test task',
+        priority: TaskPriority.medium,
+        createdAt: DateTime(2024, 1, 1),
+        updatedAt: DateTime(2024, 1, 1),
+      );
+      final result = await useCase(taskToCreate);
 
       // Assert
       expect(result.isRight, true);
@@ -64,7 +72,14 @@ void main() {
       );
 
       // Act
-      final result = await useCase('Test task');
+      final taskToCreate = Task(
+        id: '',
+        content: 'Test task',
+        priority: TaskPriority.medium,
+        createdAt: DateTime(2024, 1, 1),
+        updatedAt: DateTime(2024, 1, 1),
+      );
+      final result = await useCase(taskToCreate);
 
       // Assert
       expect(result.isLeft, true);
@@ -84,14 +99,21 @@ void main() {
       when(() => mockUuid.v4()).thenReturn('generated-id');
 
       // Act
-      final result = await useCase('');
+      final taskToCreate = Task(
+        id: '',
+        content: '',
+        priority: TaskPriority.medium,
+        createdAt: DateTime(2024, 1, 1),
+        updatedAt: DateTime(2024, 1, 1),
+      );
+      final result = await useCase(taskToCreate);
 
       // Assert
       expect(result.isLeft, true);
       result.fold(
         (failure) {
           expect(failure, isA<ValidationFailure>());
-          expect(failure.message, 'Task content cannot be empty');
+          expect(failure.message, 'Content cannot be empty');
         },
         (task) => fail('Expected failure but got success: $task'),
       );
@@ -107,14 +129,18 @@ void main() {
       );
 
       // Act
-      final result = await useCase(
-        'Test task',
+      final taskToCreate = Task(
+        id: '',
+        content: 'Test task',
         description: 'Test description',
         priority: TaskPriority.high,
         dueDate: DateTime(2024, 12, 31),
         tags: const ['work', 'important'],
         projectId: 'project-1',
+        createdAt: DateTime(2024, 1, 1),
+        updatedAt: DateTime(2024, 1, 1),
       );
+      final result = await useCase(taskToCreate);
 
       // Assert
       expect(result.isRight, true);

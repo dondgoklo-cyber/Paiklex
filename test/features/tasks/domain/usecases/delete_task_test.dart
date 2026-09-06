@@ -21,7 +21,7 @@ void main() {
     test('should delete task successfully', () async {
       // Arrange
       when(() => mockRepository.delete('test-id')).thenAnswer(
-        (_) async => Right(unit),
+        (_) async => const Right(null),
       );
 
       // Act
@@ -32,7 +32,7 @@ void main() {
       result.fold(
         (failure) => fail('Expected success but got failure: $failure'),
         (unit) {
-          expect(unit, unit);
+          expect(unit, isNull);
         },
       );
 
@@ -64,7 +64,7 @@ void main() {
     test('should return NotFoundFailure when task not found', () async {
       // Arrange
       when(() => mockRepository.delete('non-existent-id')).thenAnswer(
-        (_) async => Left(NotFoundFailure('Task with id non-existent-id not found')),
+        (_) async => Left(NotFoundFailure('Task', 'non-existent-id')),
       );
 
       // Act

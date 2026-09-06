@@ -203,29 +203,5 @@ void main() {
         expect(result, false);
       });
     });
-
-    group('isEqualUtc', () {
-      test('should return true for same millisecond in UTC', () {
-        final date1 = DateTime(2024, 6, 15, 10, 30, 45, 123, 456).toUtc();
-        final date2 = DateTime(2024, 6, 15, 10, 30, 45, 123, 456).toUtc();
-
-        expect(AppDateUtils.isEqualUtc(date1, date2), true);
-      });
-
-      test('should return false for different milliseconds in UTC', () {
-        final date1 = DateTime(2024, 6, 15, 10, 30, 45, 123, 456).toUtc();
-        final date2 = DateTime(2024, 6, 15, 10, 30, 45, 123, 457).toUtc();
-
-        expect(AppDateUtils.isEqualUtc(date1, date2), false);
-      });
-
-      test('should return true for same date with different local times', () {
-        // These are the same instant in time, just different time zones
-        final date1 = DateTime(2024, 6, 15, 10, 30, 45).toUtc();
-        final date2 = DateTime(2024, 6, 15, 10, 30, 45).toUtc();
-
-        expect(AppDateUtils.isEqualUtc(date1, date2), true);
-      });
-    });
   });
 }

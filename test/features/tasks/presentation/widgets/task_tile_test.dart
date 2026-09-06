@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:monolith_tasks/features/tasks/presentation/widgets/task_tile.dart';
 import 'package:monolith_tasks/features/tasks/domain/entities/task.dart';
+import 'package:monolith_tasks/features/tasks/domain/entities/priority.dart';
 import 'package:monolith_tasks/features/tasks/presentation/cubits/task_list_cubit.dart';
 
 class MockTaskListCubit extends MockCubit<TaskListState> implements TaskListCubit {
@@ -27,7 +28,7 @@ void main() {
   });
 
   group('TaskTile', () {
-    const testTask = Task(
+    final testTask = Task(
       id: 'test-id',
       content: 'Test task content',
       isCompleted: false,
@@ -36,7 +37,7 @@ void main() {
       updatedAt: DateTime(2024, 1, 1),
     );
 
-    const completedTask = Task(
+    final completedTask = Task(
       id: 'test-id-2',
       content: 'Completed task',
       isCompleted: true,
@@ -55,8 +56,8 @@ void main() {
               body: TaskTile(
                 task: testTask,
                 onToggle: null,
-                onDelete: null,
                 onTap: null,
+                onLongPress: null,
               ),
             ),
           ),
@@ -76,8 +77,8 @@ void main() {
               body: TaskTile(
                 task: testTask,
                 onToggle: null,
-                onDelete: null,
                 onTap: null,
+                onLongPress: null,
               ),
             ),
           ),
@@ -97,8 +98,8 @@ void main() {
               body: TaskTile(
                 task: testTask,
                 onToggle: null,
-                onDelete: null,
                 onTap: null,
+                onLongPress: null,
               ),
             ),
           ),
@@ -118,8 +119,8 @@ void main() {
               body: TaskTile(
                 task: completedTask,
                 onToggle: null,
-                onDelete: null,
                 onTap: null,
+                onLongPress: null,
               ),
             ),
           ),
@@ -142,8 +143,8 @@ void main() {
               body: TaskTile(
                 task: testTask,
                 onToggle: () => toggleCalled = true,
-                onDelete: null,
                 onTap: null,
+                onLongPress: null,
               ),
             ),
           ),
@@ -168,8 +169,8 @@ void main() {
               body: TaskTile(
                 task: testTask,
                 onToggle: null,
-                onDelete: null,
                 onTap: () => tapCalled = true,
+                onLongPress: null,
               ),
             ),
           ),
@@ -181,6 +182,32 @@ void main() {
       await tester.pump();
 
       expect(tapCalled, true);
+    });
+
+    testWidgets('calls onLongPress when tile is long pressed', (WidgetTester tester) async {
+      bool longPressCalled = false;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: BlocProvider(
+            create: (_) => MockTaskListCubit(),
+            child: Scaffold(
+              body: TaskTile(
+                task: testTask,
+                onToggle: null,
+                onTap: null,
+                onLongPress: () => longPressCalled = true,
+              ),
+            ),
+          ),
+        ),
+      );
+
+      // Long press the ListTile
+      await tester.longPress(find.byType(ListTile));
+      await tester.pump();
+
+      expect(longPressCalled, true);
     });
 
     testWidgets('shows tags when present', (WidgetTester tester) async {
@@ -196,8 +223,8 @@ void main() {
               body: TaskTile(
                 task: taskWithTags,
                 onToggle: null,
-                onDelete: null,
                 onTap: null,
+                onLongPress: null,
               ),
             ),
           ),
@@ -223,8 +250,8 @@ void main() {
               body: TaskTile(
                 task: taskWithDueDate,
                 onToggle: null,
-                onDelete: null,
                 onTap: null,
+                onLongPress: null,
               ),
             ),
           ),
@@ -235,9 +262,9 @@ void main() {
       expect(find.byType(Column), findsWidgets);
     });
 
-    testWidgets('shows subtask indicator when has subtasks', (WidgetTester tester) async {
-      final taskWithSubtasks = testTask.copyWith(
-        hasSubtasks: true,
+    testWidgets('shows subtask indicator when has parentTaskId', (WidgetTester tester) async {
+      final taskWithParent = testTask.copyWith(
+        parentTaskId: 'parent-id',
       );
 
       await tester.pumpWidget(
@@ -246,10 +273,10 @@ void main() {
             create: (_) => MockTaskListCubit(),
             child: Scaffold(
               body: TaskTile(
-                task: taskWithSubtasks,
+                task: taskWithParent,
                 onToggle: null,
-                onDelete: null,
                 onTap: null,
+                onLongPress: null,
               ),
             ),
           ),
@@ -270,8 +297,8 @@ void main() {
               body: TaskTile(
                 task: testTask,
                 onToggle: null,
-                onDelete: null,
                 onTap: null,
+                onLongPress: null,
               ),
             ),
           ),
