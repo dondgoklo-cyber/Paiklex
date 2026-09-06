@@ -12,7 +12,6 @@ class MockTaskRepository extends Mock implements TaskRepository {}
 
 void main() {
   late GetTask getTask;
-  late GetAllTasks getAllTasks;
   late TaskRepository mockRepository;
 
   final testTask = Task(
@@ -38,7 +37,6 @@ void main() {
   setUp(() {
     mockRepository = MockTaskRepository();
     getTask = GetTask(mockRepository);
-    getAllTasks = GetAllTasks(mockRepository);
   });
 
   group('GetTask', () {
@@ -63,7 +61,7 @@ void main() {
       verify(() => mockRepository.getById('test-id')).called(1);
     });
 
-    test('should return NotFoundFailure when task not found', () async {
+    test('should return null when task not found', () async {
       // Arrange
       when(() => mockRepository.getById('non-existent-id')).thenAnswer(
         (_) async => Right(null),
