@@ -110,7 +110,7 @@ LazyDatabase _openConnection() {
       if (result.missingFeatures.isNotEmpty) {
         throw StateError('WASM missing: ${result.missingFeatures}');
       }
-      return result;
+      return result.database;
     }
     final dbFolder = await getApplicationDocumentsDirectory();
     final file = File(p.join(dbFolder.path, 'monolith.sqlite'));
@@ -154,7 +154,7 @@ class TaskDao extends DatabaseAccessor<AppDatabase> with _$TaskDaoMixin {
 
   Future<int> insert(TasksCompanion row) => into(tasks).insert(row);
 
-  Future<int> update(TasksCompanion row, {String? where}) => (update(tasks)..where((t) => t.id.equals(where))).go();
+  Future<int> update(TasksCompanion companion) => update(tasks).write(companion);
 
   Future<int> delete(String id) {
     return (delete(tasks)..where((t) => t.id.equals(id))).go();
@@ -165,8 +165,7 @@ class TaskDao extends DatabaseAccessor<AppDatabase> with _$TaskDaoMixin {
     if (current == null) return false;
     final now = DateTime.now().toUtc().millisecondsSinceEpoch;
     final wasCompleted = current.isCompleted;
-    return (update(tasks)..where((t) => t.id.equals(current.id))).write(
-      current.copyWith(
+    return (update(tasks)..where((t) => t.id.equals(current.id))).write(current.copyWith(
         isCompleted: !wasCompleted,
         completedAt: !wasCompleted ? now : null,
         updatedAt: now,
@@ -189,10 +188,8 @@ class ProjectDao extends DatabaseAccessor<AppDatabase> with _$ProjectDaoMixin {
   }
 
   Future<int> insert(ProjectsCompanion row) => into(projects).insert(row);
-  Future<int> update(ProjectsCompanion row, {String? where}) => (update(projects)..where((p) => p.id.equals(where))).go();
-  Future<int> delete(String id) {
-    return (delete(projects)..where((p) => p.id.equals(id))).go();
-  }
+  Future<int> update(ProjectsCompanion companion) => update(projects).write(companion);
+  Future<int> delete(String id) => (delete(projects)..where((p) => p.id.equals(id))).go();
 }
 
 @DriftAccessor(tables: [Habits])
@@ -207,9 +204,8 @@ class HabitDao extends DatabaseAccessor<AppDatabase> with _$HabitDaoMixin {
   }
 
   Future<int> insert(HabitsCompanion row) => into(habits).insert(row);
-  Future<int> update(HabitsCompanion row, {String? where}) => (update(habits)..where((h) => h.id.equals(where))).go();
-  Future<int> delete(String id) =>
-      (delete(habits)..where((h) => h.id.equals(id))).go();
+  Future<int> update(HabitsCompanion companion) => update(habits).write(companion);
+  Future<int> delete(String id) => (delete(habits)..where((h) => h.id.equals(id))).go();
 }
 
 @DriftAccessor(tables: [Reminders])
@@ -220,7 +216,6 @@ class ReminderDao extends DatabaseAccessor<AppDatabase> with _$ReminderDaoMixin 
   Future<List<ReminderRow>> getAllOnce() => select(reminders).get();
 
   Future<int> insert(RemindersCompanion row) => into(reminders).insert(row);
-  Future<int> update(RemindersCompanion row, {String? where}) => (update(reminders)..where((r) => r.id.equals(where))).go();
-  Future<int> delete(String id) =>
-      (delete(reminders)..where((r) => r.id.equals(id))).go();
+  Future<int> update(RemindersCompanion companion) => update(reminders).write(companion);
+  Future<int> delete(String id) => (delete(reminders)..where((r) => r.id.equals(id))).go();
 }
